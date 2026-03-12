@@ -32,6 +32,7 @@ Route::get('/remove/{id}', [ItemController::class, 'getRemoveItem'])->name('remo
 Route::get('/checkout', [ItemController::class, 'postCheckout'])->name('checkout');
 
 Route::post('/items-import', [ItemController::class, 'import'])->name('item.import');
+Route::post('/services-import', [ServiceController::class, 'import'])->name('service.import');
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/user/update/{id}', [UserController::class, 'update_role'])->name('users.update');

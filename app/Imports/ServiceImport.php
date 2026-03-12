@@ -2,43 +2,36 @@
 
 namespace App\Imports;
 
-use Illuminate\Support\Facades\Storage;
+use App\Models\Service;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use App\Models\Item;
-use App\Models\Stock;
 
-class ItemStockImport implements ToCollection, WithHeadingRow
+class ServiceImport implements ToCollection, WithHeadingRow
 {
     /**
-     * @param Collection $collection
+     * @param Collection<int, Collection<string, mixed>> $rows
      */
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
-            $description = $row['product_name'] ?? null;
-            $costPrice = $row['cost_price'] ?? null;
-            $sellPrice = $row['sell_price'] ?? null;
-            $quantity = (int) ($row['quantity'] ?? 0);
+            $name = $row['service_name'] ?? $row['name'] ?? null;
+            $description = $row['description'] ?? null;
+            $price = $row['price'] ?? $row['sell_price'] ?? null;
             $imagePath = $this->resolveImagePath($row['image'] ?? null);
 
-            if (empty($description) || $costPrice === null || $sellPrice === null) {
+            if (empty($name) || $price === null || $price === '') {
                 continue;
             }
 
-            $item = Item::create([
-                'description' => trim((string) $description),
-                'cost_price' => $costPrice,
-                'sell_price' => $sellPrice,
+            Service::create([
+                'name' => trim((string) $name),
+                'description' => $description,
+                'price' => $price,
                 'img_path' => $imagePath,
                 'gallery_paths' => [$imagePath],
             ]);
-
-            $stock = new Stock();
-            $stock->item_id = $item->item_id;
-            $stock->quantity = $quantity;
-            $stock->save();
         }
     }
 

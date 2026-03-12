@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\ServicesDataTable;
+use App\Imports\ServiceImport;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Validator;
 
 class ServiceController extends Controller
@@ -173,5 +175,26 @@ class ServiceController extends Controller
         $service->restore();
 
         return redirect()->route('services.index')->with('success', 'Service restored successfully.');
+    }
+
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'service_upload' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        Excel::import(
+            new ServiceImport,
+            $request->file('service_upload')->storeAs(
+                'files',
+                $request->file('service_upload')->getClientOriginalName()
+            )
+        );
+
+        return redirect()->route('services.index')->with('success', 'Service Excel file imported successfully.');
     }
 }

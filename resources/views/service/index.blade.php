@@ -4,6 +4,12 @@
         @include('layouts.flash-messages')
         <a class="btn btn-primary" href="{{ route('services.create') }}" role="button">add service</a>
 
+        <form method="POST" enctype="multipart/form-data" action="{{ route('service.import') }}" class="mt-3 mb-3">
+            @csrf
+            <input type="file" id="serviceUploadName" name="service_upload" required>
+            <button type="submit" class="btn btn-info btn-primary">Import Service Excel File</button>
+        </form>
+
         {{ $dataTable->table() }}
     </div>
 

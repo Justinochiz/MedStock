@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
@@ -23,11 +24,10 @@ class ServicesDataTable extends DataTable
                 }
 
                 $primaryImage = $gallery[0] ?? $row->img_path;
-                if (empty($primaryImage)) {
-                    return '<span class="text-muted">No image</span>';
-                }
-
-                $url = asset('storage/' . str_replace('public/', '', $primaryImage));
+                $storagePath = str_replace('public/', '', (string) $primaryImage);
+                $url = !empty($storagePath) && Storage::disk('public')->exists($storagePath)
+                    ? asset('storage/' . $storagePath)
+                    : asset('images/medstock-logo.png');
                 $countBadge = count($gallery) > 1
                     ? '<span class="badge bg-secondary ms-1">+' . (count($gallery) - 1) . '</span>'
                     : '';
@@ -113,7 +113,6 @@ class ServicesDataTable extends DataTable
             Column::make('name'),
             Column::make('description'),
             Column::make('price'),
-            Column::make('deleted_at')->title('Deleted At')->defaultContent('-'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
