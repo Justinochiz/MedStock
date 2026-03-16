@@ -7,6 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Searchable\Searchable;
 use Spatie\Searchable\SearchResult;
 
+/**
+ * @property int $customer_id
+ * @property string|null $title
+ * @property string|null $fname
+ * @property string|null $lname
+ * @property string|null $addressline
+ * @property string|null $town
+ * @property string|null $zipcode
+ * @property string|null $phone
+ * @property int|null $user_id
+ */
 class Customer extends Model implements Searchable
 {
     use HasFactory;
@@ -19,7 +30,7 @@ class Customer extends Model implements Searchable
     {
         $url = route('customers.show', $this->customer_id);
 
-        return new \Spatie\Searchable\SearchResult(
+        return new SearchResult(
             $this,
             $this->lname . " " . $this->fname,
             $url

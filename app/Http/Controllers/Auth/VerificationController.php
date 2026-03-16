@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Foundation\Auth\VerifiesEmails;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,6 +29,7 @@ class VerificationController extends Controller
      */
     protected function redirectTo(): string
     {
+        /** @var User|null $user */
         $user = Auth::user();
 
         if ($user && $user->role === 'admin') {

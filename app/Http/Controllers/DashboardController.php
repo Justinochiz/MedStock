@@ -81,7 +81,8 @@ class DashboardController extends Controller
             ->join('orderline as ol', 'o.orderinfo_id', '=', 'ol.orderinfo_id')
             ->join('item as i', 'i.item_id', '=', 'ol.item_id')
             ->groupBy(DB::raw('month(o.date_placed)'))
-            ->pluck(DB::raw('sum(i.sell_price * ol.quantity) AS total'), DB::raw('monthname(o.date_placed) as month'))
+            ->selectRaw('monthname(o.date_placed) as month, sum(i.sell_price * ol.quantity) as total')
+            ->pluck('total', 'month')
             ->all();
         // dd($orders);
         $salesChart = new MonthlySalesChart;

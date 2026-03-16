@@ -8,6 +8,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SearchController;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 /*
 |--------------------------------------------------------------------------
@@ -24,8 +25,11 @@ use Illuminate\Support\Facades\Auth;
 //     return view('welcome');
 // });
 Route::get('/', function () {
-    if (Auth::check() && Auth::user()->hasVerifiedEmail()) {
-        if (Auth::user()->role === 'admin') {
+    $user = Auth::user();
+
+    if ($user instanceof User && $user->hasVerifiedEmail()) {
+        $role = (string) $user->getAttribute('role');
+        if ($role === 'admin') {
             return redirect()->route('dashboard.index');
         }
 

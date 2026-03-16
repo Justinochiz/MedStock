@@ -13,6 +13,7 @@ class UserController extends Controller
 {
     public function editProfile()
     {
+        /** @var User $user */
         $user = Auth::user();
         $customer = Customer::where('user_id', $user->id)->first();
 
@@ -21,6 +22,7 @@ class UserController extends Controller
 
     public function updateProfile(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
 
         $validator = Validator::make($request->all(), [
