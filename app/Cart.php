@@ -19,8 +19,9 @@ class Cart
         }
     }
 
-    public function add($item, $id)
+    public function add($item, $id, $qty = 1)
     {
+        $qty = max(1, (int) $qty);
         // dd($this->items, $item, $id);
         $storedItem = ['qty' => 0, 'price' => $item->sell_price, 'item' => $item];
         // dd($storedItem, $this->items);
@@ -31,12 +32,11 @@ class Cart
             }
         }
         // dd($storedItem);
-        //$storedItem['qty'] += $item->qty;
-        $storedItem['qty']++;
+        $storedItem['qty'] += $qty;
         $storedItem['price'] = $item->sell_price * $storedItem['qty'];
         $this->items[$id] = $storedItem;
-        $this->totalQty++;
-        $this->totalPrice += $storedItem['price'];
+        $this->totalQty += $qty;
+        $this->totalPrice += $item->sell_price * $qty;
         // dd($this);
     }
 
@@ -45,7 +45,7 @@ class Cart
         $this->items[$id]['qty']--;
         $this->items[$id]['price'] -= $this->items[$id]['item']['sell_price'];
         $this->totalQty--;
-        $this->totalPrice -= $this->items[$id]['item']['sell_price'] * $this->items[$id]['qty'];
+        $this->totalPrice -= $this->items[$id]['item']['sell_price'];
         if ($this->items[$id]['qty'] <= 0) {
             unset($this->items[$id]);
         }

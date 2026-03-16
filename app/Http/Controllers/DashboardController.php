@@ -158,4 +158,17 @@ class DashboardController extends Controller
     {
         return $dataTable->render('dashboard.orders');
     }
+
+    public function discountCodes()
+    {
+        $discountCodes = [
+            ['code' => 'MEDSAVE5', 'percent' => 5],
+            ['code' => 'CARE10', 'percent' => 10],
+            ['code' => 'HEALTH15', 'percent' => 15],
+            ['code' => 'WELL20', 'percent' => 20],
+            ['code' => 'IMED25', 'percent' => 25],
+        ];
+
+        return view('dashboard.discount-codes', compact('discountCodes'));
+    }
 }

@@ -44,10 +44,22 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
-        // Redirect admin users to dashboard, others to home
+        if (!$user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice')
+                ->with('status', 'Please verify your email first. Check your inbox for the verification link.');
+        }
+
+        if (!$user->is_active) {
+            $this->guard()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('login')->withErrors(['email' => 'Your account has been deactivated. Please contact an administrator.']);
+        }
+
+        // Redirect admin users to dashboard, others to browse products
         if ($user->role === 'admin') {
             return redirect()->route('dashboard.index');
         }
-        return redirect('/home');
+        return redirect()->route('getItems');
     }
 }

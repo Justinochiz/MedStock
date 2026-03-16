@@ -22,6 +22,14 @@ use Illuminate\Support\Facades\Auth;
 
 class ItemController extends Controller
 {
+    private const DISCOUNT_CODES = [
+        'MEDSAVE5' => 5,
+        'CARE10' => 10,
+        'HEALTH15' => 15,
+        'WELL20' => 20,
+        'IMED25' => 25,
+    ];
+
     /**
      * Display a listing of the resource.
      */
@@ -278,7 +286,7 @@ class ItemController extends Controller
         return view('shop.index', compact('items'));
     }
 
-    public function addToCart($id)
+    public function addToCart(Request $request, $id)
     {
         // Check if user is authenticated
         if (!Auth::check()) {
@@ -287,19 +295,84 @@ class ItemController extends Controller
         }
 
         $item = Item::find($id);
+        if (!$item) {
+            return redirect()->back()->with('error', 'Item not found.');
+        }
+
+        $stock = Stock::where('item_id', $id)->first();
+        $availableQty = (int) ($stock->quantity ?? 0);
+        if ($availableQty < 1) {
+            return redirect()->back()->with('error', 'This item is out of stock.');
+        }
+
+        $requestedQty = (int) $request->input('quantity', 1);
+        if ($requestedQty < 1) {
+            return redirect()->back()->with('error', 'Quantity must be at least 1.');
+        }
 
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
+
+        $existingQtyInCart = 0;
+        if ($oldCart && isset($oldCart->items[$id])) {
+            $existingQtyInCart = (int) $oldCart->items[$id]['qty'];
+        }
+
+        if (($existingQtyInCart + $requestedQty) > $availableQty) {
+            return redirect()->back()->with(
+                'error',
+                'Only ' . $availableQty . ' item(s) are available. You already have ' . $existingQtyInCart . ' in cart.'
+            );
+        }
+
         // dd($oldCart);
         $cart = new Cart($oldCart);
         // dd($cart);
-        $cart->add($item, $id);
+        $cart->add($item, $id, $requestedQty);
         // dd($cart);
 
         Session::put('cart', $cart);
 
+        return redirect()->back()->with('success', $requestedQty . ' item(s) added to cart.');
+    }
 
+    public function buyNow(Request $request, $id)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')
+                ->with('message', 'Please login or register to continue shopping and buy items.');
+        }
 
-        return redirect('/')->with('success', 'item added to cart');
+        $item = Item::find($id);
+        if (!$item) {
+            return redirect()->back()->with('error', 'Item not found.');
+        }
+
+        $stock = Stock::where('item_id', $id)->first();
+        $availableQty = (int) ($stock->quantity ?? 0);
+        if ($availableQty < 1) {
+            return redirect()->back()->with('error', 'This item is out of stock.');
+        }
+
+        $requestedQty = (int) $request->input('quantity', 1);
+        if ($requestedQty < 1) {
+            return redirect()->back()->with('error', 'Quantity must be at least 1.');
+        }
+
+        if ($requestedQty > $availableQty) {
+            return redirect()->back()->with('error', 'Only ' . $availableQty . ' item(s) are available.');
+        }
+
+        if (Session::has('cart')) {
+            Session::put('cart_backup_for_buy_now', Session::get('cart'));
+        }
+
+        $cart = new Cart(null);
+        $cart->add($item, $id, $requestedQty);
+
+        Session::put('cart', $cart);
+        Session::put('is_buy_now', true);
+
+        return redirect()->route('checkout');
     }
 
     public function getCart()
@@ -312,6 +385,31 @@ class ItemController extends Controller
         $cart = new Cart($oldCart);
         // dd($cart);
         return view('shop.shopping-cart', ['products' => $cart->items, 'totalPrice' => $cart->totalPrice]);
+    }
+
+    public function showCheckout(Request $request)
+    {
+        if (!Session::has('cart')) {
+            return redirect()->route('getCart');
+        }
+
+        $customer = Customer::where('user_id', Auth::id())->first();
+        if (!$customer) {
+            return redirect()->route('profile.edit')->with('error', 'Please complete your profile before checkout.');
+        }
+
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+        $discountCode = strtoupper(trim((string) $request->query('discount_code', '')));
+        $summary = $this->buildCheckoutSummary($cart->totalPrice, $discountCode);
+
+        return view('shop.checkout', [
+            'products' => $cart->items,
+            'customer' => $customer,
+            'summary' => $summary,
+            'discountCodes' => self::DISCOUNT_CODES,
+            'selectedPaymentMethod' => $request->query('payment_method', 'cash_on_delivery'),
+        ]);
     }
 
     public function getReduceByOne($id)
@@ -346,21 +444,42 @@ class ItemController extends Controller
         if (!Session::has('cart')) {
             return redirect()->route('getCart');
         }
+
+        $request = request();
+        $request->validate([
+            'discount_code' => 'nullable|string|max:50',
+            'payment_method' => 'required|in:cash_on_delivery,gcash,credit_card,debit_card',
+        ]);
+
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
+        $customer = Customer::where('user_id', Auth::id())->first();
+        if (!$customer) {
+            return redirect()->route('profile.edit')->with('error', 'Please complete your profile before checkout.');
+        }
+
+        $discountCode = strtoupper(trim((string) $request->input('discount_code', '')));
+        $summary = $this->buildCheckoutSummary($cart->totalPrice, $discountCode);
         // dd($cart, $cart->items);
         try {
 
 
             // dd($customer);
             DB::beginTransaction();
-            $customer = Customer::where('user_id', Auth::id())->first();
             $order = new Order();
             $order->customer_id = $customer->customer_id;
+            $order->customer_name = $this->formatCustomerName($customer, Auth::user()->name);
+            $order->customer_phone = $customer->phone;
+            $order->shipping_address = $this->formatCustomerAddress($customer);
             $order->date_placed = now();
             $order->date_shipped = Carbon::now()->addDays(5);
 
-            $order->shipping = 10.00;
+            $order->shipping = 0.00;
+            $order->discount_code = $summary['appliedCode'];
+            $order->discount_amount = $summary['discountAmount'];
+            $order->subtotal_amount = $summary['subtotal'];
+            $order->total_amount = $summary['total'];
+            $order->payment_method = $request->input('payment_method');
             $order->status = 'Processing';
 
             $order->save();
@@ -385,12 +504,57 @@ class ItemController extends Controller
         } catch (\Exception $e) {
             // dd($e->getMessage());
             DB::rollback();
-            // dd($order);
+            if (Session::pull('is_buy_now', false)) {
+                Session::forget('cart');
+                if (Session::has('cart_backup_for_buy_now')) {
+                    Session::put('cart', Session::pull('cart_backup_for_buy_now'));
+                }
+            }
             return redirect()->route('getCart')->with('error', $e->getMessage());
         }
 
         DB::commit();
-        Session::forget('cart');
+        if (Session::pull('is_buy_now', false)) {
+            Session::forget('cart');
+            if (Session::has('cart_backup_for_buy_now')) {
+                Session::put('cart', Session::pull('cart_backup_for_buy_now'));
+            }
+        } else {
+            Session::forget('cart');
+            Session::forget('cart_backup_for_buy_now');
+        }
         return redirect('/')->with('success', 'Successfully Purchased Your Products!!!');
+    }
+
+    private function buildCheckoutSummary(float $subtotal, string $discountCode = ''): array
+    {
+        $normalizedCode = strtoupper(trim($discountCode));
+        $discountPercent = self::DISCOUNT_CODES[$normalizedCode] ?? 0;
+        $discountAmount = round($subtotal * ($discountPercent / 100), 2);
+        $total = max(0, $subtotal - $discountAmount);
+
+        return [
+            'subtotal' => $subtotal,
+            'discountPercent' => $discountPercent,
+            'discountAmount' => $discountAmount,
+            'total' => $total,
+            'appliedCode' => $discountPercent > 0 ? $normalizedCode : null,
+        ];
+    }
+
+    private function formatCustomerName(Customer $customer, string $fallbackName): string
+    {
+        $fullName = trim(($customer->fname ?? '') . ' ' . ($customer->lname ?? ''));
+
+        return $fullName !== '' ? $fullName : $fallbackName;
+    }
+
+    private function formatCustomerAddress(Customer $customer): string
+    {
+        return implode(', ', array_filter([
+            $customer->addressline,
+            $customer->town,
+            $customer->zipcode,
+        ]));
     }
 }

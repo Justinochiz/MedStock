@@ -22,7 +22,7 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        return view('users.profile');
+        return redirect()->route('profile.edit');
     }
 
     /**
@@ -65,7 +65,7 @@ class CustomerController extends Controller
      */
     public function show(string $id)
     {
-        return view('users.profile');
+        return redirect()->route('profile.edit');
     }
 
     /**

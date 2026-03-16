@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     {{-- <a class="navbar-brand" href="{{ route('getItems') }}">MedStock</a> --}}
-    <a class="navbar-brand" href="/">
+    <a class="navbar-brand" href="{{ route('getItems') }}">
         <img src="{{ asset('images/medstock-logo.svg') }}" alt="MedStock" height="60" class="d-inline-block align-text-top" style="margin-right: 10px;">
     </a>
 
@@ -13,7 +13,11 @@
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
                 {{-- <a class="nav-link" href="{{ route('getItems') }}">Home<span class="sr-only">(current)</span></a> --}}
-                <a class="nav-link" href="">Home<span class="sr-only"></span></a>
+                @if (Auth::check() && Auth::user()->hasVerifiedEmail())
+                    <a class="nav-link" href="{{ Auth::user()->role === 'admin' ? route('dashboard.index') : route('getItems') }}">Home<span class="sr-only"></span></a>
+                @else
+                    <a class="nav-link" href="{{ route('getItems') }}">Home<span class="sr-only"></span></a>
+                @endif
 
             </li>
 
@@ -29,14 +33,17 @@
                         {{-- <a class="dropdown-item" href="{{ route('admin.orders') }}">Orders</a>
                         <a class="dropdown-item" href="{{ route('admin.users') }}">Users</a> --}}
                         <a class="dropdown-item" href="#">Orders </a>
-                        <a class="dropdown-item" href="#">User Profile</a>
+                        <a class="dropdown-item" href="{{ route('getCart') }}">View Cart</a>
+                        <a class="dropdown-item" href="{{ route('profile.edit') }}">User Profile</a>
                         <div class="dropdown-divider"></div>
                         <form id="logout-form" action="{{ route('user.logout') }}" method="POST" style="display: none;">
                             @csrf
                         </form>
                         <a class="dropdown-item" href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
                     @elseif (Auth::check())
-                        <a class="dropdown-item" href="{{ route('customers.create') }}">User Profile</a>
+                        <a class="dropdown-item" href="{{ route('getCart') }}">View Cart</a>
+                        <a class="dropdown-item" href="{{ route('home') }}#your-orders">Your Orders</a>
+                        <a class="dropdown-item" href="{{ route('profile.edit') }}">User Profile</a>
                         {{-- <a class="dropdown-item" href="#">User Profile</a> --}}
                         <div class="dropdown-divider"></div>
                         <form id="logout-form" action="{{ route('user.logout') }}" method="POST" style="display: none;">

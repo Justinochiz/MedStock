@@ -35,6 +35,18 @@ class ItemsDataTable extends DataTable
                 return '<img src="' . e($url) . '" alt="item image" width="50" height="50">' . $countBadge;
             })
             ->addColumn('action', function ($row) {
+                if (!empty($row->deleted_at)) {
+                    $restoreUrl = route('items.restore', $row->item_id);
+
+                    return '<form action="' . e($restoreUrl) . '" method="POST" style="display:inline-block;">'
+                        . csrf_field()
+                        . method_field('PATCH')
+                        . '<button type="submit" title="Restore" style="border:none;background:none;padding:0;cursor:pointer;">'
+                        . '<i class="fa-solid fa-rotate-left" style="color:blue"></i>'
+                        . '</button>'
+                        . '</form>';
+                }
+
                 $editUrl = route('items.edit', $row->item_id);
                 $deleteUrl = route('items.destroy', $row->item_id);
 
@@ -59,7 +71,6 @@ class ItemsDataTable extends DataTable
     {
         return DB::table('item as i')
             ->leftJoin('stock as s', 'i.item_id', '=', 's.item_id')
-            ->whereNull('i.deleted_at')
             ->select(
                 'i.item_id',
                 'i.description',
@@ -67,6 +78,7 @@ class ItemsDataTable extends DataTable
                 'i.cost_price',
                 'i.img_path',
                 'i.gallery_paths',
+                'i.deleted_at',
                 's.quantity'
             );
     }

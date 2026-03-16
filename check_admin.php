@@ -6,7 +6,7 @@ $app = require_once __DIR__ . '/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-$user = \App\Models\User::where('email', 'admin@example.com')->first();
+$user = \App\Models\User::where('email', 'tomonjustine74@gmail.com')->first();
 
 if ($user) {
     echo "\n✓ ADMIN USER FOUND:\n";
@@ -16,9 +16,9 @@ if ($user) {
     echo "Email: " . $user->email . "\n";
     echo "Role: " . $user->role . "\n";
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-    echo "\n✓ YES, admin@example.com is an ADMIN!\n\n";
+    echo "\n✓ YES, tomonjustine74@gmail.com is an ADMIN!\n\n";
 } else {
-    echo "\n✗ admin@example.com NOT FOUND\n";
+    echo "\n✗ tomonjustine74@gmail.com NOT FOUND\n";
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
     echo "\nAll users in database:\n";
     $allUsers = \App\Models\User::all();

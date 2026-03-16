@@ -68,9 +68,24 @@
                 </div>
 
                 @if($stock && $stock->quantity > 0)
-                    <a href="{{ route('addToCart', $item->item_id) }}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-shopping-cart"></i> Add to Cart
-                    </a>
+                    <form action="{{ route('addToCart', $item->item_id) }}" method="GET" class="d-inline-flex align-items-center gap-2">
+                        <input
+                            type="number"
+                            name="quantity"
+                            min="1"
+                            max="{{ $stock->quantity }}"
+                            value="1"
+                            class="form-control"
+                            style="width: 110px;"
+                            required
+                        >
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                        <button type="submit" formaction="{{ route('buyNow', $item->item_id) }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-bolt"></i> Buy Now
+                        </button>
+                    </form>
                 @else
                     <button class="btn btn-secondary btn-lg" disabled>
                         Out of Stock
@@ -88,18 +103,16 @@
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const mainPhoto = document.getElementById('main-item-photo');
-                if (!mainPhoto) {
-                    return;
-                }
-
-                document.querySelectorAll('.thumbnail-photo').forEach(function (button) {
-                    button.addEventListener('click', function () {
-                        const nextUrl = button.getAttribute('data-photo-url');
-                        if (nextUrl) {
-                            mainPhoto.setAttribute('src', nextUrl);
-                        }
+                if (mainPhoto) {
+                    document.querySelectorAll('.thumbnail-photo').forEach(function (button) {
+                        button.addEventListener('click', function () {
+                            const nextUrl = button.getAttribute('data-photo-url');
+                            if (nextUrl) {
+                                mainPhoto.setAttribute('src', nextUrl);
+                            }
+                        });
                     });
-                });
+                }
             });
         </script>
     @endpush

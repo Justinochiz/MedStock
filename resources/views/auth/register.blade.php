@@ -37,7 +37,7 @@
                                     <p class="text-muted">Join us and start your journey</p>
                                 </div>
 
-                                <form method="POST" action="{{ route('register') }}">
+                                <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data">
                                     @csrf
 
                                     <div class="mb-4">
@@ -65,6 +65,20 @@
                                             placeholder="Enter your email" required autocomplete="email">
                                         @error('email')
                                             <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="photo" class="form-label text-uppercase small fw-bold">
+                                            Profile Photo (Optional)
+                                        </label>
+                                        <input id="photo" type="file"
+                                            class="form-control form-control-lg @error('photo') is-invalid @enderror"
+                                            name="photo" accept="image/png,image/jpeg">
+                                        @error('photo')
+                                            <span class="invalid-feedback d-block" role="alert">
                                                 <strong>{{ $message }}</strong>
                                             </span>
                                         @enderror

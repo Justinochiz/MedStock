@@ -17,4 +17,4 @@ echo "Name: " . $user->name . "\n";
 echo "Email: " . $user->email . "\n";
 echo "Role: " . $user->role . " ✓ ADMIN NOW\n";
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-echo "\nYou can now log in with admin@example.com\n\n";
+echo "\nYou can now log in with tomonjustine74@gmail.com\n\n";

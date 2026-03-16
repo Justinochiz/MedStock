@@ -22,7 +22,25 @@ class UsersDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
+            ->addColumn('photo', function ($row) {
+                $url = (!empty($row->photo_path) && \Illuminate\Support\Facades\Storage::disk('public')->exists($row->photo_path))
+                    ? asset('storage/' . $row->photo_path)
+                    : asset('images/medstock-logo.png');
+                return '<img src="' . e($url) . '" alt="avatar" width="40" height="40" style="border-radius:50%;object-fit:cover;">';
+            })
+            ->addColumn('online', function ($row) {
+                $isOnline = $row->last_seen_at && $row->last_seen_at->gt(now()->subMinutes(5));
+                return $isOnline
+                    ? '<span class="badge bg-success"><i class="fas fa-circle me-1" style="font-size:8px;"></i>Online</span>'
+                    : '<span class="badge bg-secondary"><i class="fas fa-circle me-1" style="font-size:8px;"></i>Offline</span>';
+            })
+            ->addColumn('status', function ($row) {
+                return $row->is_active
+                    ? '<span class="badge bg-success">Active</span>'
+                    : '<span class="badge bg-danger">Inactive</span>';
+            })
             ->addColumn('action', 'users.action')
+            ->rawColumns(['photo', 'online', 'status', 'action'])
             ->setRowId('id');
     }
 
@@ -62,16 +80,17 @@ class UsersDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-
-            Column::make('id'),
+            Column::make('id')->title('ID'),
+            Column::computed('photo')->title('Photo')->exportable(false)->printable(false),
             Column::make('name'),
             Column::make('email'),
-            Column::make('created_at'),
-            Column::make('updated_at'),
-            Column::computed('action')
+            Column::make('role'),
+            Column::computed('online')->title('Online')->exportable(false)->printable(false),
+            Column::computed('status')->title('Status')->exportable(false)->printable(false),
+            Column::computed('action')->title('Role / Status')
                 ->exportable(false)
                 ->printable(false)
-                ->width(60)
+                ->width(220)
                 ->addClass('text-center'),
         ];
     }

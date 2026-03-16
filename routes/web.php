@@ -23,21 +23,36 @@ use Illuminate\Support\Facades\Auth;
 // Route::get('/', function () {
 //     return view('welcome');
 // });
-Route::get('/', [ItemController::class, 'getItems'])->name('getItems');
+Route::get('/', function () {
+    if (Auth::check() && Auth::user()->hasVerifiedEmail()) {
+        if (Auth::user()->role === 'admin') {
+            return redirect()->route('dashboard.index');
+        }
+
+        return redirect()->route('getItems');
+    }
+
+    return redirect()->route('getItems');
+})->name('landing');
+
+Route::get('/shop', [ItemController::class, 'getItems'])->name('getItems');
 Route::get('/items/{items}', [ItemController::class, 'show'])->name('items.show');
 Route::get('/add-to-cart/{id}', [ItemController::class, 'addToCart'])->name('addToCart');
+Route::get('/buy-now/{id}', [ItemController::class, 'buyNow'])->name('buyNow');
 Route::get('/shopping-cart', [ItemController::class, 'getCart'])->name('getCart');
 Route::get('/reduce/{id}', [ItemController::class, 'getReduceByOne'])->name('reduceByOne');
 Route::get('/remove/{id}', [ItemController::class, 'getRemoveItem'])->name('removeItem');
-Route::get('/checkout', [ItemController::class, 'postCheckout'])->name('checkout');
 
 Route::post('/items-import', [ItemController::class, 'import'])->name('item.import');
 Route::post('/services-import', [ServiceController::class, 'import'])->name('service.import');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/user/update/{id}', [UserController::class, 'update_role'])->name('users.update');
+    Route::get('/profile', [UserController::class, 'editProfile'])->name('profile.edit');
+    Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
     Route::get('/shopping-cart', [ItemController::class, 'getCart'])->name('getCart');
-    Route::get('/checkout', [ItemController::class, 'postCheckout'])->name('checkout');
+    Route::get('/checkout', [ItemController::class, 'showCheckout'])->name('checkout');
+    Route::post('/checkout', [ItemController::class, 'postCheckout'])->name('checkout.process');
     Route::post('/user/logout', [UserController::class, 'logout'])->name('user.logout');
     Route::resource('customers', CustomerController::class)->only(['create', 'store', 'show']);
     
@@ -45,6 +60,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('/customers', [DashboardController::class, 'getCustomers'])->name('admin.customers');
         Route::get('/users', [DashboardController::class, 'getUsers'])->name('admin.users');
+        Route::get('/discount-codes', [DashboardController::class, 'discountCodes'])->name('admin.discount-codes');
         Route::get('/orders', [DashboardController::class, 'getOrders'])->name('admin.orders');
         Route::get('/order/{id}', [OrderController::class, 'processOrder'])->name('admin.orderDetails');
         Route::post('/order/{id}', [OrderController::class, 'orderUpdate'])->name('admin.orderUpdate');
@@ -72,6 +88,6 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Auth::routes();
+Auth::routes(['verify' => true]);
 Route::get('/search', [SearchController::class, 'search'])->name('search');
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

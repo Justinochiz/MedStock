@@ -23,15 +23,15 @@
                    style="font-size: 0.95rem; font-weight: 500; letter-spacing: 0.5px;">
                     ORDERS
                 </a>
-                <a href="{{ route('admin.customers') }}" 
-                   class="nav-link-custom @if(Route::currentRouteName() === 'admin.customers') active @endif"
-                   style="font-size: 0.95rem; font-weight: 500; letter-spacing: 0.5px;">
-                    CUSTOMERS
-                </a>
                 <a href="{{ route('admin.users') }}" 
                    class="nav-link-custom @if(Route::currentRouteName() === 'admin.users') active @endif"
                    style="font-size: 0.95rem; font-weight: 500; letter-spacing: 0.5px;">
-                    STAFF
+                    USERS
+                </a>
+                <a href="{{ route('admin.discount-codes') }}" 
+                   class="nav-link-custom @if(Route::currentRouteName() === 'admin.discount-codes') active @endif"
+                   style="font-size: 0.95rem; font-weight: 500; letter-spacing: 0.5px;">
+                    DISCOUNTS
                 </a>
             </div>
 
@@ -50,7 +50,7 @@
                     <ul class="dropdown-menu dropdown-menu-end mt-2" aria-labelledby="userDropdown">
                         <li><span class="dropdown-header">{{ Auth::user()->name }}</span></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{{ route('customers.show', Auth::user()->id) }}"><i class="fas fa-user-circle me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="fas fa-user-circle me-2"></i>Profile</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logout-form-admin').submit();">
@@ -80,13 +80,13 @@
                    class="nav-link @if(Route::currentRouteName() === 'admin.orders') active @endif">
                     <i class="fas fa-shopping-cart me-2"></i>ORDERS
                 </a>
-                <a href="{{ route('admin.customers') }}" 
-                   class="nav-link @if(Route::currentRouteName() === 'admin.customers') active @endif">
-                    <i class="fas fa-users me-2"></i>CUSTOMERS
-                </a>
                 <a href="{{ route('admin.users') }}" 
                    class="nav-link @if(Route::currentRouteName() === 'admin.users') active @endif">
-                    <i class="fas fa-user-cog me-2"></i>STAFF
+                    <i class="fas fa-users me-2"></i>USERS
+                </a>
+                <a href="{{ route('admin.discount-codes') }}" 
+                   class="nav-link @if(Route::currentRouteName() === 'admin.discount-codes') active @endif">
+                    <i class="fas fa-tags me-2"></i>DISCOUNTS
                 </a>
             </div>
         </div>

@@ -34,18 +34,18 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link @if(Route::currentRouteName() === 'admin.customers') active @endif" 
-               href="{{ route('admin.customers') }}">
+            <a class="nav-link @if(Route::currentRouteName() === 'admin.users') active @endif" 
+               href="{{ route('admin.users') }}">
                 <i class="fas fa-users"></i>
-                <span>Customers</span>
+                <span>Users</span>
             </a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link @if(Route::currentRouteName() === 'admin.users') active @endif" 
-               href="{{ route('admin.users') }}">
-                <i class="fas fa-user-cog"></i>
-                <span>Users</span>
+            <a class="nav-link @if(Route::currentRouteName() === 'admin.discount-codes') active @endif" 
+               href="{{ route('admin.discount-codes') }}">
+                <i class="fas fa-tags"></i>
+                <span>Discount Codes</span>
             </a>
         </li>
 
