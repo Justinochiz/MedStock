@@ -17,6 +17,7 @@ class ItemImport implements ToModel
     {
         $item =   Item::create([
             'description' => $row[0],
+            'category' => !empty($row[4]) ? trim((string) $row[4]) : 'General',
             'cost_price' => $row[1],
             'sell_price' => $row[2],
             'img_path' => 'default.jpg'

@@ -11,11 +11,33 @@
         <div class="container">
             <p class="text-uppercase small fw-semibold text-light-emphasis mb-2">Professional Care</p>
             <h1 class="text-white mb-2"><i class="fas fa-briefcase-medical me-2"></i>Medical Services</h1>
-            <p class="text-white-50 mb-0">Choose trusted services and book them instantly.</p>
+                    <p class="text-white-50 mb-0">Choose trusted services and set units/devices before checkout.</p>
         </div>
     </div>
 
     <div class="container my-5">
+        <div class="row mb-4">
+            <div class="col-md-8 mx-auto">
+                <form action="{{ route('search') }}" method="GET" class="input-group input-group-lg">
+                    @csrf
+                    <input type="hidden" name="type" value="service">
+                    <input type="text" class="form-control" name="term" placeholder="Search services by name..."
+                           value="{{ request('term') }}">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        @auth
+            <div class="d-flex justify-content-end mb-3">
+                <a href="{{ route('services.cart') }}" class="btn btn-outline-success">
+                    <i class="fas fa-shopping-cart me-1"></i>Service Cart
+                </a>
+            </div>
+        @endauth
+
         @if($services->count() > 0)
             <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                 <h4 class="mb-0">Available Services</h4>
@@ -47,6 +69,36 @@
                                 <h4 class="text-primary mb-3">P{{ number_format($service->price, 2) }}</h4>
 
                                 <div class="mt-auto d-grid gap-2">
+                                    @auth
+                                        <form action="{{ route('services.addToCart', $service->service_id) }}" method="POST" class="d-grid gap-2">
+                                            @csrf
+                                            <label class="form-label small text-muted mb-0">Units / Devices</label>
+                                            <div class="d-flex gap-2 align-items-center">
+                                                <input
+                                                    type="number"
+                                                    name="quantity"
+                                                    min="1"
+                                                    max="99"
+                                                    value="1"
+                                                    class="form-control"
+                                                    style="max-width: 110px;"
+                                                    required
+                                                >
+                                                <button type="submit" class="btn btn-primary w-100">
+                                                    <i class="fas fa-shopping-cart me-1"></i>Add Service
+                                                </button>
+                                            </div>
+                                            <small class="text-muted">Set how many units/devices this service applies to.</small>
+                                            <button type="submit" formaction="{{ route('services.buyNow', $service->service_id) }}" class="btn btn-success">
+                                                <i class="fas fa-bolt me-1"></i>Buy Now
+                                            </button>
+                                        </form>
+                                    @else
+                                        <a href="{{ route('login') }}" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt me-1"></i>Login to Buy
+                                        </a>
+                                    @endauth
+
                                     <a href="{{ route('shop.services.show', $service->service_id) }}" class="btn btn-outline-primary">
                                         <i class="fas fa-eye me-1"></i>View Details
                                     </a>

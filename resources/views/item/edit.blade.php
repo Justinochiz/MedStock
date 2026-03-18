@@ -16,6 +16,15 @@
             </div>
 
             <div class="mb-3">
+                <label for="category" class="form-label">Category</label>
+                <input type="text" class="form-control @error('category') is-invalid @enderror"
+                       id="category" name="category" value="{{ old('category', $item->category) }}" required>
+                @error('category')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="mb-3">
                 <label for="cost" class="form-label">Cost Price</label>
                 <input type="number" class="form-control @error('cost_price') is-invalid @enderror" 
                        id="cost" name="cost_price" value="{{ old('cost_price', $item->cost_price) }}" 

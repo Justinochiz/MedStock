@@ -24,6 +24,16 @@
                             </div>
 
                             <div class="mb-4">
+                                <label for="category" class="form-label fw-bold">Category</label>
+                                <input type="text" name="category" id="category"
+                                    class="form-control form-control-lg @error('category') is-invalid @enderror"
+                                    value="{{ old('category') }}" required placeholder="e.g. Medicine, Equipment, Supplies">
+                                @error('category')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-4">
                                 <label for="cost_price" class="form-label fw-bold">Cost Price</label>
                                 <input type="number" name="cost_price" id="cost_price" 
                                     class="form-control form-control-lg @error('cost_price') is-invalid @enderror" 

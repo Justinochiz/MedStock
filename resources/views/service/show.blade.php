@@ -43,19 +43,22 @@
                 <p class="text-secondary">{{ $service->description }}</p>
 
                 @auth
-                    <form action="{{ route('services.buyNow', $service->service_id) }}" method="POST" class="d-inline-flex align-items-center gap-2">
-                        @csrf
+                    <form action="{{ route('services.checkout', $service->service_id) }}" method="GET" class="d-grid gap-2" style="max-width: 420px;">
+                        <label for="service-quantity" class="form-label mb-0">Units / Devices</label>
                         <input
                             type="number"
+                            id="service-quantity"
                             name="quantity"
                             min="1"
+                            max="99"
                             value="1"
                             class="form-control"
-                            style="width: 110px;"
+                            style="width: 130px;"
                             required
                         >
+                        <small class="text-muted">Set the number of units/devices covered by this service.</small>
                         <button type="submit" class="btn btn-success btn-lg">
-                            <i class="fas fa-bolt"></i> Buy Service
+                            <i class="fas fa-credit-card"></i> Proceed to Checkout
                         </button>
                     </form>
                 @else

@@ -57,6 +57,18 @@ class RegisterController extends Controller
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+        ], [
+            'name.required' => 'Full name is required.',
+            'name.max' => 'Full name may not be greater than 255 characters.',
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.max' => 'Email address may not be greater than 255 characters.',
+            'password.required' => 'Password is required.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.confirmed' => 'Password confirmation does not match.',
+            'photo.image' => 'Profile photo must be a valid image file.',
+            'photo.mimes' => 'Profile photo must be a JPG, JPEG, or PNG file.',
+            'photo.max' => 'Profile photo may not be greater than 2MB.',
         ]);
     }
 

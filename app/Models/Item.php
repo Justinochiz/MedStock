@@ -15,7 +15,7 @@ class Item extends Model implements Searchable
     protected $table = 'item';
     public $timestamps = false;
     protected $primaryKey = 'item_id';
-    protected $fillable = ['description', 'cost_price', 'sell_price', 'img_path', 'gallery_paths'];
+    protected $fillable = ['description', 'category', 'cost_price', 'sell_price', 'img_path', 'gallery_paths'];
 
     protected $casts = [
         'gallery_paths' => 'array',

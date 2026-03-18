@@ -17,6 +17,8 @@ use Validator;
 
 class ServiceController extends Controller
 {
+    private const SERVICE_CART_SESSION_KEY = 'service_cart';
+
     public function shop()
     {
         $services = Service::query()->orderByDesc('service_id')->get();
@@ -57,50 +59,302 @@ class ServiceController extends Controller
         }
 
         $service = Service::findOrFail($id);
-        $customer = Customer::where('user_id', Auth::id())->first();
 
-        if (!$customer) {
-            return redirect()->route('profile.edit')->with('error', 'Please complete your profile before purchasing a service.');
+        return redirect()->route('services.checkout', [
+            'service' => $service->service_id,
+            'quantity' => (int) $request->quantity,
+        ]);
+    }
+
+    public function addToCart(Request $request, int $id)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')
+                ->with('message', 'Please login or register to continue with service purchase.');
         }
+
+        $request->validate([
+            'quantity' => 'required|integer|min:1|max:99',
+        ]);
+
+        $service = Service::findOrFail($id);
+        $requestedQty = (int) $request->input('quantity', 1);
+        $cart = $this->getServiceCart();
+
+        if (isset($cart[$id])) {
+            $cart[$id]['qty'] += $requestedQty;
+        } else {
+            $cart[$id] = [
+                'service_id' => $service->service_id,
+                'name' => $service->name,
+                'price' => (float) $service->price,
+                'img_path' => $service->img_path,
+                'gallery_paths' => $service->gallery_paths,
+                'qty' => $requestedQty,
+            ];
+        }
+
+        session()->put(self::SERVICE_CART_SESSION_KEY, $cart);
+
+        return redirect()->back()->with('success', $requestedQty . ' service(s) added to cart.');
+    }
+
+    public function getCart()
+    {
+        $cart = $this->getServiceCart();
+
+        if (empty($cart)) {
+            return view('service.shopping-cart', [
+                'services' => [],
+                'totalPrice' => 0,
+                'totalQty' => 0,
+            ]);
+        }
+
+        $services = array_values($cart);
+        $totalQty = array_sum(array_map(function (array $line) {
+            return (int) ($line['qty'] ?? 0);
+        }, $services));
+        $totalPrice = array_sum(array_map(function (array $line) {
+            return ((float) ($line['price'] ?? 0)) * ((int) ($line['qty'] ?? 0));
+        }, $services));
+
+        return view('service.shopping-cart', compact('services', 'totalPrice', 'totalQty'));
+    }
+
+    public function getReduceByOne(int $id)
+    {
+        $cart = $this->getServiceCart();
+
+        if (!isset($cart[$id])) {
+            return redirect()->route('services.cart');
+        }
+
+        $cart[$id]['qty'] = max(0, ((int) $cart[$id]['qty']) - 1);
+        if ($cart[$id]['qty'] < 1) {
+            unset($cart[$id]);
+        }
+
+        $this->persistServiceCart($cart);
+
+        return redirect()->route('services.cart');
+    }
+
+    public function getRemoveItem(int $id)
+    {
+        $cart = $this->getServiceCart();
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            $this->persistServiceCart($cart);
+        }
+
+        return redirect()->route('services.cart');
+    }
+
+    public function showCartCheckout(Request $request)
+    {
+        $cart = $this->getServiceCart();
+        if (empty($cart)) {
+            return redirect()->route('services.cart');
+        }
+
+        $request->validate([
+            'payment_method' => 'nullable|in:cash_on_delivery,gcash,credit_card,debit_card',
+        ]);
+
+        $customer = Customer::where('user_id', Auth::id())->first();
+        if (!$customer) {
+            return redirect()->route('profile.edit')->with('error', 'Please complete your profile before checkout.');
+        }
+
+        $services = array_values($cart);
+        $totalQty = array_sum(array_map(function (array $line) {
+            return (int) ($line['qty'] ?? 0);
+        }, $services));
+        $subtotal = array_sum(array_map(function (array $line) {
+            return ((float) ($line['price'] ?? 0)) * ((int) ($line['qty'] ?? 0));
+        }, $services));
+
+        return view('service.checkout-cart', [
+            'customer' => $customer,
+            'services' => $services,
+            'totalQty' => $totalQty,
+            'subtotal' => $subtotal,
+            'total' => $subtotal,
+            'selectedPaymentMethod' => $request->query('payment_method', 'cash_on_delivery'),
+        ]);
+    }
+
+    public function postCartCheckout(Request $request)
+    {
+        $cart = $this->getServiceCart();
+        if (empty($cart)) {
+            return redirect()->route('services.cart');
+        }
+
+        $request->validate([
+            'payment_method' => 'required|in:cash_on_delivery,gcash,credit_card,debit_card',
+        ]);
+
+        $customer = Customer::where('user_id', Auth::id())->first();
+        if (!$customer) {
+            return redirect()->route('profile.edit')->with('error', 'Please complete your profile before checkout.');
+        }
+
+        $services = array_values($cart);
+        $subtotal = array_sum(array_map(function (array $line) {
+            return ((float) ($line['price'] ?? 0)) * ((int) ($line['qty'] ?? 0));
+        }, $services));
 
         try {
             DB::beginTransaction();
 
             $order = new Order();
             $order->customer_id = $customer->customer_id;
-            $order->customer_name = trim(($customer->fname ?? '') . ' ' . ($customer->lname ?? '')) ?: Auth::user()->name;
+            $order->customer_name = $this->formatCustomerName($customer, Auth::user()->name);
             $order->customer_phone = $customer->phone;
-            $order->shipping_address = implode(', ', array_filter([
-                $customer->addressline,
-                $customer->town,
-                $customer->zipcode,
-            ]));
+            $order->shipping_address = $this->formatCustomerAddress($customer);
             $order->date_placed = now();
             $order->date_shipped = now()->addDays(5);
             $order->shipping = 0;
             $order->discount_code = null;
             $order->discount_amount = 0;
-            $order->subtotal_amount = (float) $service->price * (int) $request->quantity;
-            $order->total_amount = (float) $service->price * (int) $request->quantity;
-            $order->payment_method = 'cash_on_delivery';
+            $order->subtotal_amount = $subtotal;
+            $order->total_amount = $subtotal;
+            $order->payment_method = $request->input('payment_method');
+            $order->status = 'Processing';
+            $order->save();
+
+            foreach ($services as $serviceLine) {
+                DB::table('service_orderline')->insert([
+                    'service_id' => (int) $serviceLine['service_id'],
+                    'orderinfo_id' => $order->orderinfo_id,
+                    'quantity' => (int) $serviceLine['qty'],
+                ]);
+            }
+
+            DB::commit();
+
+            session()->forget(self::SERVICE_CART_SESSION_KEY);
+
+            return redirect()->route('home')->with('success', 'Service order placed successfully.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Unable to process service checkout right now. Please try again.');
+        }
+    }
+
+    public function showCheckout(Request $request, int $id)
+    {
+        $service = Service::findOrFail($id);
+
+        $request->validate([
+            'quantity' => 'nullable|integer|min:1|max:99',
+            'payment_method' => 'nullable|in:cash_on_delivery,gcash,credit_card,debit_card',
+        ]);
+
+        $customer = Customer::where('user_id', Auth::id())->first();
+        if (!$customer) {
+            return redirect()->route('profile.edit')->with('error', 'Please complete your profile before checkout.');
+        }
+
+        $quantity = (int) $request->query('quantity', 1);
+        $subtotal = (float) $service->price * $quantity;
+
+        return view('service.checkout', [
+            'service' => $service,
+            'customer' => $customer,
+            'quantity' => $quantity,
+            'subtotal' => $subtotal,
+            'total' => $subtotal,
+            'selectedPaymentMethod' => $request->query('payment_method', 'cash_on_delivery'),
+        ]);
+    }
+
+    public function postCheckout(Request $request, int $id)
+    {
+        $service = Service::findOrFail($id);
+
+        $request->validate([
+            'quantity' => 'required|integer|min:1|max:99',
+            'payment_method' => 'required|in:cash_on_delivery,gcash,credit_card,debit_card',
+        ]);
+
+        $customer = Customer::where('user_id', Auth::id())->first();
+        if (!$customer) {
+            return redirect()->route('profile.edit')->with('error', 'Please complete your profile before checkout.');
+        }
+
+        $quantity = (int) $request->input('quantity');
+        $subtotal = (float) $service->price * $quantity;
+
+        try {
+            DB::beginTransaction();
+
+            $order = new Order();
+            $order->customer_id = $customer->customer_id;
+            $order->customer_name = $this->formatCustomerName($customer, Auth::user()->name);
+            $order->customer_phone = $customer->phone;
+            $order->shipping_address = $this->formatCustomerAddress($customer);
+            $order->date_placed = now();
+            $order->date_shipped = now()->addDays(5);
+            $order->shipping = 0;
+            $order->discount_code = null;
+            $order->discount_amount = 0;
+            $order->subtotal_amount = $subtotal;
+            $order->total_amount = $subtotal;
+            $order->payment_method = $request->input('payment_method');
             $order->status = 'Processing';
             $order->save();
 
             DB::table('service_orderline')->insert([
                 'service_id' => $service->service_id,
                 'orderinfo_id' => $order->orderinfo_id,
-                'quantity' => (int) $request->quantity,
+                'quantity' => $quantity,
             ]);
 
             DB::commit();
 
-            return redirect()->route('shop.services.show', $service->service_id)
-                ->with('success', 'Service purchased successfully. You can post a review after this order is recorded.');
+            return redirect()->route('home')->with('success', 'Service order placed successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Unable to process service purchase right now. Please try again.');
+            return redirect()->back()->with('error', 'Unable to process service checkout right now. Please try again.');
         }
+    }
+
+    private function formatCustomerName(Customer $customer, string $fallbackName): string
+    {
+        $fullName = trim(($customer->fname ?? '') . ' ' . ($customer->lname ?? ''));
+
+        return $fullName !== '' ? $fullName : $fallbackName;
+    }
+
+    private function formatCustomerAddress(Customer $customer): string
+    {
+        return implode(', ', array_filter([
+            $customer->addressline,
+            $customer->town,
+            $customer->zipcode,
+        ]));
+    }
+
+    private function getServiceCart(): array
+    {
+        $cart = session()->get(self::SERVICE_CART_SESSION_KEY, []);
+
+        return is_array($cart) ? $cart : [];
+    }
+
+    private function persistServiceCart(array $cart): void
+    {
+        if (empty($cart)) {
+            session()->forget(self::SERVICE_CART_SESSION_KEY);
+            return;
+        }
+
+        session()->put(self::SERVICE_CART_SESSION_KEY, $cart);
     }
 
     private function hasPurchasedService(int $userId, int $serviceId): bool
@@ -136,14 +390,32 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name' => 'required|min:3',
+            'name' => 'required|string|min:3|max:255',
+            'description' => 'nullable|string|max:1000',
             'price' => 'required|numeric|min:0',
-            'image' => 'nullable|mimes:jpg,png,jpeg',
+            'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'images' => 'nullable|array',
-            'images.*' => 'nullable|mimes:jpg,png,jpeg',
+            'images.*' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
         ];
 
-        $validator = Validator::make($request->all(), $rules);
+        $messages = [
+            'name.required' => 'Service name is required.',
+            'name.min' => 'Service name must be at least 3 characters.',
+            'name.max' => 'Service name may not be greater than 255 characters.',
+            'description.max' => 'Description may not be greater than 1000 characters.',
+            'price.required' => 'Price is required.',
+            'price.numeric' => 'Price must be a valid number.',
+            'price.min' => 'Price cannot be negative.',
+            'image.image' => 'Main photo must be a valid image file.',
+            'image.mimes' => 'Main photo must be a JPG, JPEG, or PNG file.',
+            'image.max' => 'Main photo may not be greater than 2MB.',
+            'images.array' => 'Additional photos format is invalid.',
+            'images.*.image' => 'Each additional photo must be a valid image file.',
+            'images.*.mimes' => 'Each additional photo must be a JPG, JPEG, or PNG file.',
+            'images.*.max' => 'Each additional photo may not be greater than 2MB.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
@@ -190,14 +462,32 @@ class ServiceController extends Controller
         }
 
         $rules = [
-            'name' => 'required|min:3',
+            'name' => 'required|string|min:3|max:255',
+            'description' => 'nullable|string|max:1000',
             'price' => 'required|numeric|min:0',
-            'image' => 'nullable|mimes:jpg,png,jpeg',
+            'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'images' => 'nullable|array',
-            'images.*' => 'nullable|mimes:jpg,png,jpeg',
+            'images.*' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
         ];
 
-        $validator = Validator::make($request->all(), $rules);
+        $messages = [
+            'name.required' => 'Service name is required.',
+            'name.min' => 'Service name must be at least 3 characters.',
+            'name.max' => 'Service name may not be greater than 255 characters.',
+            'description.max' => 'Description may not be greater than 1000 characters.',
+            'price.required' => 'Price is required.',
+            'price.numeric' => 'Price must be a valid number.',
+            'price.min' => 'Price cannot be negative.',
+            'image.image' => 'Main photo must be a valid image file.',
+            'image.mimes' => 'Main photo must be a JPG, JPEG, or PNG file.',
+            'image.max' => 'Main photo may not be greater than 2MB.',
+            'images.array' => 'Additional photos format is invalid.',
+            'images.*.image' => 'Each additional photo must be a valid image file.',
+            'images.*.mimes' => 'Each additional photo must be a JPG, JPEG, or PNG file.',
+            'images.*.max' => 'Each additional photo may not be greater than 2MB.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();

@@ -53,12 +53,42 @@ class ItemController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'description' => 'required|min:4',
-            'image' => 'nullable|mimes:jpg,png,jpeg',
+            'description' => 'required|string|min:4|max:255',
+            'category' => 'required|string|min:2|max:100',
+            'cost_price' => 'required|numeric|min:0',
+            'sell_price' => 'required|numeric|min:0|gte:cost_price',
+            'quantity' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'images' => 'nullable|array',
-            'images.*' => 'nullable|mimes:jpg,png,jpeg'
+            'images.*' => 'nullable|image|mimes:jpg,png,jpeg|max:2048'
         ];
-        $validator = Validator::make($request->all(), $rules);
+        $messages = [
+            'description.required' => 'Item name is required.',
+            'description.min' => 'Item name must be at least 4 characters.',
+            'description.max' => 'Item name may not be greater than 255 characters.',
+            'category.required' => 'Category is required.',
+            'category.min' => 'Category must be at least 2 characters.',
+            'category.max' => 'Category may not be greater than 100 characters.',
+            'cost_price.required' => 'Cost price is required.',
+            'cost_price.numeric' => 'Cost price must be a valid number.',
+            'cost_price.min' => 'Cost price cannot be negative.',
+            'sell_price.required' => 'Selling price is required.',
+            'sell_price.numeric' => 'Selling price must be a valid number.',
+            'sell_price.min' => 'Selling price cannot be negative.',
+            'sell_price.gte' => 'Selling price must be greater than or equal to cost price.',
+            'quantity.required' => 'Quantity is required.',
+            'quantity.integer' => 'Quantity must be a whole number.',
+            'quantity.min' => 'Quantity cannot be negative.',
+            'image.image' => 'Main photo must be a valid image file.',
+            'image.mimes' => 'Main photo must be a JPG, JPEG, or PNG file.',
+            'image.max' => 'Main photo may not be greater than 2MB.',
+            'images.array' => 'Additional photos format is invalid.',
+            'images.*.image' => 'Each additional photo must be a valid image file.',
+            'images.*.mimes' => 'Each additional photo must be a JPG, JPEG, or PNG file.',
+            'images.*.max' => 'Each additional photo may not be greater than 2MB.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -72,6 +102,7 @@ class ItemController extends Controller
 
         $item = Item::create([
             'description' => trim($request->description),
+            'category' => trim($request->category),
             'cost_price' => $request->cost_price,
             'sell_price' => $request->sell_price,
             'img_path' => $path,
@@ -149,20 +180,53 @@ class ItemController extends Controller
         }
 
         $rules = [
-            'description' => 'required|min:4',
-            'image' => 'nullable|mimes:jpg,png,jpeg',
+            'description' => 'required|string|min:4|max:255',
+            'category' => 'required|string|min:2|max:100',
+            'cost_price' => 'required|numeric|min:0',
+            'sell_price' => 'required|numeric|min:0|gte:cost_price',
+            'quantity' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'images' => 'nullable|array',
-            'images.*' => 'nullable|mimes:jpg,png,jpeg',
+            'images.*' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'remove_photos' => 'nullable|array',
             'remove_photos.*' => 'string',
         ];
 
-        $validator = Validator::make($request->all(), $rules);
+        $messages = [
+            'description.required' => 'Item name is required.',
+            'description.min' => 'Item name must be at least 4 characters.',
+            'description.max' => 'Item name may not be greater than 255 characters.',
+            'category.required' => 'Category is required.',
+            'category.min' => 'Category must be at least 2 characters.',
+            'category.max' => 'Category may not be greater than 100 characters.',
+            'cost_price.required' => 'Cost price is required.',
+            'cost_price.numeric' => 'Cost price must be a valid number.',
+            'cost_price.min' => 'Cost price cannot be negative.',
+            'sell_price.required' => 'Selling price is required.',
+            'sell_price.numeric' => 'Selling price must be a valid number.',
+            'sell_price.min' => 'Selling price cannot be negative.',
+            'sell_price.gte' => 'Selling price must be greater than or equal to cost price.',
+            'quantity.required' => 'Quantity is required.',
+            'quantity.integer' => 'Quantity must be a whole number.',
+            'quantity.min' => 'Quantity cannot be negative.',
+            'image.image' => 'Main photo must be a valid image file.',
+            'image.mimes' => 'Main photo must be a JPG, JPEG, or PNG file.',
+            'image.max' => 'Main photo may not be greater than 2MB.',
+            'images.array' => 'Additional photos format is invalid.',
+            'images.*.image' => 'Each additional photo must be a valid image file.',
+            'images.*.mimes' => 'Each additional photo must be a JPG, JPEG, or PNG file.',
+            'images.*.max' => 'Each additional photo may not be greater than 2MB.',
+            'remove_photos.array' => 'Selected photos to remove are invalid.',
+            'remove_photos.*.string' => 'Selected photo path is invalid.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
         $item->description = $request->description;
+        $item->category = trim($request->category);
         $item->cost_price = $request->cost_price;
         $item->sell_price = $request->sell_price;
 

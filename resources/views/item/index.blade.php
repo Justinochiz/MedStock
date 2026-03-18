@@ -37,6 +37,66 @@
         <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.0.3/css/buttons.dataTables.min.css">
         <script src="https://cdn.datatables.net/buttons/1.0.3/js/dataTables.buttons.min.js"></script>
         <script src="/vendor/datatables/buttons.server-side.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const tableElement = $('#items-table');
+
+                if (!tableElement.length) {
+                    return;
+                }
+
+                tableElement.on('init.dt', function () {
+                    const table = tableElement.DataTable();
+                    const categoryColumnIndex = 3;
+                    const filterWrapper = $('#items-table_filter');
+
+                    if (!filterWrapper.length || filterWrapper.find('#category-filter').length) {
+                        return;
+                    }
+
+                    const select = $('<select id="category-filter" class="form-select form-select-sm medical-category-filter"><option value="">All Categories</option></select>');
+
+                    const loadCategories = function () {
+                        const currentValue = select.val();
+                        const uniqueCategories = [];
+
+                        table.column(categoryColumnIndex, { search: 'applied' }).data().each(function (value) {
+                            const textValue = String(value || '').trim();
+
+                            if (textValue !== '' && !uniqueCategories.includes(textValue)) {
+                                uniqueCategories.push(textValue);
+                            }
+                        });
+
+                        uniqueCategories.sort(function (a, b) {
+                            return a.localeCompare(b);
+                        });
+
+                        select.find('option:not(:first)').remove();
+
+                        uniqueCategories.forEach(function (category) {
+                            select.append($('<option></option>').val(category).text(category));
+                        });
+
+                        if (currentValue && uniqueCategories.includes(currentValue)) {
+                            select.val(currentValue);
+                        }
+                    };
+
+                    select.on('change', function () {
+                        const selected = $(this).val();
+                        const escaped = $.fn.dataTable.util.escapeRegex(selected);
+                        table.column(categoryColumnIndex).search(selected ? '^' + escaped + '$' : '', true, false).draw();
+                    });
+
+                    filterWrapper.addClass('medical-filter-row');
+                    filterWrapper.prepend(select);
+
+                    loadCategories();
+                    table.on('draw.dt', loadCategories);
+                });
+            });
+        </script>
         <style>
             .medical-items-page {
                 background: linear-gradient(135deg, #f8f9fb 0%, #f4f6fa 100%);
@@ -142,6 +202,24 @@
                 font-weight: 600;
             }
 
+            .dataTables_wrapper .medical-filter-row {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .dataTables_wrapper .medical-category-filter {
+                width: 200px;
+                border: 1px solid #cdd8e6;
+                border-radius: 8px;
+                padding: 6px 10px;
+                background-color: #fff;
+                color: #1f4b7f;
+                font-weight: 600;
+            }
+
             .dataTables_wrapper .dataTables_filter input,
             .dataTables_wrapper .dataTables_length select {
                 border: 1px solid #cdd8e6;
@@ -198,6 +276,14 @@
 
                 .medical-table-card table.dataTable {
                     font-size: 0.86rem;
+                }
+
+                .dataTables_wrapper .medical-filter-row {
+                    justify-content: flex-start;
+                }
+
+                .dataTables_wrapper .medical-category-filter {
+                    width: 100%;
                 }
             }
         </style>

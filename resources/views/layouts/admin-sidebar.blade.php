@@ -60,7 +60,15 @@
             <a class="nav-link @if(Route::currentRouteName() === 'items.index') active @endif" 
                href="{{ route('items.index') }}">
                 <i class="fas fa-pills"></i>
-                <span>Inventory</span>
+                <span>Equipment</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link @if(Route::is('services.*')) active @endif"
+               href="{{ route('services.index') }}">
+                <i class="fas fa-briefcase-medical"></i>
+                <span>Services</span>
             </a>
         </li>
 

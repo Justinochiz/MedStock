@@ -33,7 +33,8 @@
                         {{-- <a class="dropdown-item" href="{{ route('admin.orders') }}">Orders</a>
                         <a class="dropdown-item" href="{{ route('admin.users') }}">Users</a> --}}
                         <a class="dropdown-item" href="#">Orders </a>
-                        <a class="dropdown-item" href="{{ route('getCart') }}">View Cart</a>
+                        <a class="dropdown-item" href="{{ route('getCart') }}">View Product Cart</a>
+                        <a class="dropdown-item" href="{{ route('services.cart') }}">View Service Cart</a>
                         <a class="dropdown-item" href="{{ route('profile.edit') }}">User Profile</a>
                         <div class="dropdown-divider"></div>
                         <form id="logout-form" action="{{ route('user.logout') }}" method="POST" style="display: none;">
@@ -41,7 +42,8 @@
                         </form>
                         <a class="dropdown-item" href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
                     @elseif (Auth::check())
-                        <a class="dropdown-item" href="{{ route('getCart') }}">View Cart</a>
+                        <a class="dropdown-item" href="{{ route('getCart') }}">View Product Cart</a>
+                        <a class="dropdown-item" href="{{ route('services.cart') }}">View Service Cart</a>
                         <a class="dropdown-item" href="{{ route('home') }}#your-orders">Your Orders</a>
                         <a class="dropdown-item" href="{{ route('profile.edit') }}">User Profile</a>
                         {{-- <a class="dropdown-item" href="#">User Profile</a> --}}
@@ -60,12 +62,25 @@
                 </div>
     </div>
     </li>
+    @php
+        $productCartQty = Session::has('cart') ? (int) Session::get('cart')->totalQty : 0;
+        $serviceCartRaw = Session::get('service_cart', []);
+        $serviceCartQty = 0;
+
+        if (is_array($serviceCartRaw)) {
+            foreach ($serviceCartRaw as $serviceLine) {
+                $serviceCartQty += (int) ($serviceLine['qty'] ?? 0);
+            }
+        }
+
+        $combinedCartQty = $productCartQty + $serviceCartQty;
+    @endphp
     <li class="nav-link">
-        <a href="{{ route('getCart') }}">
+        <a href="{{ route('services.cart') }}">
             {{-- <a href=""> --}}
-            <i class="fa-solid fa-cart-shopping"></i> Shopping Cart
+            <i class="fa-solid fa-cart-shopping"></i> Service Cart
             <span
-                class="badge rounded-pill bg-danger">{{ Session::has('cart') ? Session::get('cart')->totalQty : '' }}</span>
+                class="badge rounded-pill bg-danger">{{ $combinedCartQty > 0 ? $combinedCartQty : '' }}</span>
         </a>
 
     </li>
@@ -73,6 +88,11 @@
     <form action="{{ route('search') }}" class="form-inline my-2 my-lg-0 ms-4" method="GET">
         {{-- <form action="#" "form-inline my-2 my-lg-0" method="POST"> --}}
         @csrf
+        <select class="form-select me-2" name="type" style="max-width: 140px;">
+            <option value="all" {{ request('type', 'all') === 'all' ? 'selected' : '' }}>All</option>
+            <option value="product" {{ request('type') === 'product' ? 'selected' : '' }}>Products</option>
+            <option value="service" {{ request('type') === 'service' ? 'selected' : '' }}>Services</option>
+        </select>
         <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="term">
         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
     </form>

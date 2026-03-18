@@ -28,6 +28,7 @@
             <div class="col-md-8 mx-auto">
                 <form action="{{ route('search') }}" method="GET" class="input-group input-group-lg">
                     @csrf
+                    <input type="hidden" name="type" value="product">
                     <input type="text" class="form-control" name="term" placeholder="Search equipment by name..." 
                            value="{{ request('term') }}">
                     <button class="btn btn-primary" type="submit">

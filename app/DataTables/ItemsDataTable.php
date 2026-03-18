@@ -74,12 +74,13 @@ class ItemsDataTable extends DataTable
             ->select(
                 'i.item_id',
                 'i.description',
+                'i.category',
                 'i.sell_price',
                 'i.cost_price',
                 'i.img_path',
                 'i.gallery_paths',
                 'i.deleted_at',
-                's.quantity'
+                's.quantity as quantity'
             );
     }
 
@@ -113,9 +114,10 @@ class ItemsDataTable extends DataTable
             Column::make('item_id')->title('Item ID'),
             Column::computed('image')->title('Image')->exportable(false)->printable(false),
             Column::make('description'),
+            Column::make('category')->title('Category'),
             Column::make('sell_price')->title('Sell Price'),
             Column::make('cost_price')->title('Cost Price'),
-            Column::make('quantity'),
+            Column::make('quantity')->name('s.quantity')->title('Quantity'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

@@ -90,13 +90,13 @@
                                             @endphp
                                             <div class="d-flex align-items-center justify-content-between gap-3 py-2">
                                                 <div class="d-flex align-items-center gap-3">
-                                                    <img src="{{ $imageUrl }}" alt="{{ $item->description }}" class="order-item-image">
+                                                    <img src="{{ $imageUrl }}" alt="{{ $item->item_name }}" class="order-item-image">
                                                     <div>
-                                                        <div class="fw-semibold">{{ $item->description }}</div>
-                                                        <small class="text-muted">Qty: {{ $item->quantity }}</small>
+                                                        <div class="fw-semibold">{{ $item->item_name }}</div>
+                                                        <small class="text-muted">{{ $item->line_type }} | Qty: {{ $item->quantity }}</small>
                                                     </div>
                                                 </div>
-                                                <div class="fw-semibold">P{{ number_format($item->sell_price * $item->quantity, 2) }}</div>
+                                                <div class="fw-semibold">P{{ number_format($item->unit_price * $item->quantity, 2) }}</div>
                                             </div>
                                         @endforeach
                                     </div>

@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Searchable\Searchable;
+use Spatie\Searchable\SearchResult;
 
-class Service extends Model
+class Service extends Model implements Searchable
 {
     use HasFactory, SoftDeletes;
 
@@ -38,5 +40,16 @@ class Service extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class, 'service_id', 'service_id');
+    }
+
+    public function getSearchResult(): SearchResult
+    {
+        $url = route('shop.services.show', $this->service_id);
+
+        return new SearchResult(
+            $this,
+            $this->name,
+            $url
+        );
     }
 }
