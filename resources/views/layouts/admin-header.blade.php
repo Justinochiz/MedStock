@@ -37,11 +37,6 @@
 
             <!-- Right Side: Mobile Toggle and User Menu -->
             <div class="d-flex align-items-center gap-3">
-                <!-- Mobile Menu Toggle -->
-                <button class="navbar-toggler d-lg-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#adminMobileMenu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
                 <!-- User Profile Dropdown -->
                 <div class="dropdown">
                     <button class="btn btn-light rounded-circle p-2 text-center" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 2px solid #f0f0f0;">
@@ -62,32 +57,6 @@
                         </li>
                     </ul>
                 </div>
-            </div>
-        </div>
-
-        <!-- Mobile Navigation Menu -->
-        <div class="collapse navbar-collapse mt-3" id="adminMobileMenu">
-            <div class="d-flex flex-column gap-2">
-                <a href="{{ route('dashboard.index') }}" 
-                   class="nav-link @if(Route::currentRouteName() === 'dashboard.index') active @endif">
-                    <i class="fas fa-chart-pie me-2"></i>DASHBOARD
-                </a>
-                <a href="{{ route('items.index') }}" 
-                   class="nav-link @if(Route::currentRouteName() === 'items.index') active @endif">
-                    <i class="fas fa-boxes me-2"></i>INVENTORY
-                </a>
-                <a href="{{ route('admin.orders') }}" 
-                   class="nav-link @if(Route::currentRouteName() === 'admin.orders') active @endif">
-                    <i class="fas fa-shopping-cart me-2"></i>ORDERS
-                </a>
-                <a href="{{ route('admin.users') }}" 
-                   class="nav-link @if(Route::currentRouteName() === 'admin.users') active @endif">
-                    <i class="fas fa-users me-2"></i>USERS
-                </a>
-                <a href="{{ route('admin.discount-codes') }}" 
-                   class="nav-link @if(Route::currentRouteName() === 'admin.discount-codes') active @endif">
-                    <i class="fas fa-tags me-2"></i>DISCOUNTS
-                </a>
             </div>
         </div>
     </div>
