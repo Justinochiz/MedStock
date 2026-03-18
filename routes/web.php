@@ -8,6 +8,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\ReviewController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 /*
@@ -54,6 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/user/update/{id}', [UserController::class, 'update_role'])->name('users.update');
     Route::get('/profile', [UserController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/items/{item}/reviews', [ReviewController::class, 'storeItem'])->name('items.reviews.store');
     Route::get('/shopping-cart', [ItemController::class, 'getCart'])->name('getCart');
     Route::get('/checkout', [ItemController::class, 'showCheckout'])->name('checkout');
     Route::post('/checkout', [ItemController::class, 'postCheckout'])->name('checkout.process');

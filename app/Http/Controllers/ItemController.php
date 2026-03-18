@@ -18,6 +18,7 @@ use App\Cart;
 use Carbon\Carbon;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Review;
 
 
 class ItemController extends Controller
@@ -97,7 +98,32 @@ class ItemController extends Controller
             abort(404, 'Item not found');
         }
 
-        return view('item.show', compact('item', 'stock'));
+        $reviews = Review::with('user')
+            ->where('item_id', $item->item_id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $averageRating = round((float) $reviews->avg('rating'), 1);
+        $canReview = false;
+        $userReview = null;
+
+        if (Auth::check()) {
+            $canReview = $this->hasPurchasedItem((int) Auth::id(), (int) $item->item_id);
+            $userReview = $reviews->firstWhere('user_id', Auth::id());
+        }
+
+        return view('item.show', compact('item', 'stock', 'reviews', 'averageRating', 'canReview', 'userReview'));
+    }
+
+    private function hasPurchasedItem(int $userId, int $itemId): bool
+    {
+        return DB::table('orderline')
+            ->join('orderinfo', 'orderline.orderinfo_id', '=', 'orderinfo.orderinfo_id')
+            ->join('customer', 'orderinfo.customer_id', '=', 'customer.customer_id')
+            ->where('customer.user_id', $userId)
+            ->where('orderline.item_id', $itemId)
+            ->where('orderinfo.status', '!=', 'Canceled')
+            ->exists();
     }
 
     /**
