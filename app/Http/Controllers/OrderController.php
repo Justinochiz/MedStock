@@ -16,20 +16,29 @@ class OrderController extends Controller
             ->where('o.orderinfo_id', $id)
             ->select('c.lname', 'c.fname', 'c.addressline', 'c.phone', 'o.orderinfo_id',  'o.status', 'o.date_placed')
             ->first();
-        // dd($customer);
-        $orders = DB::table('customer as c')
+
+        $itemOrders = DB::table('customer as c')
             ->join('orderinfo as o', 'o.customer_id', '=', 'c.customer_id')
             ->join('orderline as ol', 'o.orderinfo_id', '=', 'ol.orderinfo_id')
             ->join('item as i', 'ol.item_id', '=', 'i.item_id')
             ->where('o.orderinfo_id', $id)
-            ->select('i.description', 'ol.quantity', 'i.img_path', 'i.sell_price')
+            ->select('i.description', 'ol.quantity', 'i.img_path', 'i.sell_price', DB::raw("'item' as line_type"))
             ->get();
-        // dd($orders);
+
+        $serviceOrders = DB::table('customer as c')
+            ->join('orderinfo as o', 'o.customer_id', '=', 'c.customer_id')
+            ->join('service_orderline as sl', 'o.orderinfo_id', '=', 'sl.orderinfo_id')
+            ->join('service as s', 'sl.service_id', '=', 's.service_id')
+            ->where('o.orderinfo_id', $id)
+            ->select('s.name as description', 'sl.quantity', 's.img_path', 's.price as sell_price', DB::raw("'service' as line_type"))
+            ->get();
+
+        $orders = $itemOrders->concat($serviceOrders)->values();
+
         $total = $orders->map(function ($item, $key) {
             return $item->sell_price * $item->quantity;
         })->sum();
-        // ->sum();
-        // dd($total);
+
         return view('order.processOrder', compact('customer', 'orders', 'total'));
     }
 
@@ -43,13 +52,22 @@ class OrderController extends Controller
 
         // dd($order > 0);
         if ($order > 0) {
-            $myOrder = DB::table('customer as c')->join('orderinfo as o', 'o.customer_id', '=', 'c.customer_id')
+            $itemLines = DB::table('customer as c')->join('orderinfo as o', 'o.customer_id', '=', 'c.customer_id')
                 ->join('orderline as ol', 'o.orderinfo_id', '=', 'ol.orderinfo_id')
                 ->join('item as i', 'ol.item_id', '=', 'i.item_id')
                 ->where('o.orderinfo_id', $id)
                 ->select('c.user_id', 'i.description', 'ol.quantity', 'i.img_path', 'i.sell_price')
                 ->get();
-            // dd($myOrder);
+
+            $serviceLines = DB::table('customer as c')->join('orderinfo as o', 'o.customer_id', '=', 'c.customer_id')
+                ->join('service_orderline as sl', 'o.orderinfo_id', '=', 'sl.orderinfo_id')
+                ->join('service as s', 'sl.service_id', '=', 's.service_id')
+                ->where('o.orderinfo_id', $id)
+                ->select('c.user_id', 's.name as description', 'sl.quantity', 's.img_path', 's.price as sell_price')
+                ->get();
+
+            $myOrder = $itemLines->concat($serviceLines)->values();
+
             $user =  DB::table('users as u')
                 ->join('customer as c', 'u.id', '=', 'c.user_id')
                 ->join('orderinfo as o', 'o.customer_id', '=', 'c.customer_id')

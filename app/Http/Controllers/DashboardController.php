@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\DataTables\CustomersDataTable;
 use App\DataTables\UsersDataTable;
 use App\DataTables\OrderDataTable;
+use App\DataTables\ReviewDataTable;
 use DB;
 use App\Charts\CustomerChart;
 use App\Charts\MonthlySalesChart;
@@ -158,6 +159,11 @@ class DashboardController extends Controller
     public function getOrders(OrderDataTable $dataTable)
     {
         return $dataTable->render('dashboard.orders');
+    }
+
+    public function getReviews(ReviewDataTable $dataTable)
+    {
+        return $dataTable->render('dashboard.reviews');
     }
 
     public function discountCodes()

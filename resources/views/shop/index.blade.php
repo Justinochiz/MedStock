@@ -14,6 +14,9 @@
                         <i class="fas fa-hospital-user"></i> Shop Medical Essentials
                     </h1>
                     <p class="text-white-50 mb-0">Browse trusted equipment, choose your quantity, and checkout with confidence.</p>
+                    <a href="{{ route('shop.services') }}" class="btn btn-light mt-3">
+                        <i class="fas fa-briefcase-medical me-2"></i>Browse Medical Services
+                    </a>
                 </div>
             </div>
         </div>

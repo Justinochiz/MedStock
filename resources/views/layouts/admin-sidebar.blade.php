@@ -8,7 +8,6 @@
             </div>
             <div>
                 <h3 class="navbar-brand mb-0">MedStock</h3>
-                <p class="tagline">Medical Shop Management</p>
             </div>
         </div>
         <button type="button" class="btn-close sidebar-toggle d-lg-none" aria-label="Close Sidebar"></button>
@@ -70,6 +69,14 @@
                href="{{ route('admin.orders') }}">
                 <i class="fas fa-file-prescription"></i>
                 <span>Orders</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link @if(Route::currentRouteName() === 'admin.reviews') active @endif" 
+               href="{{ route('admin.reviews') }}">
+                <i class="fas fa-star-half-alt"></i>
+                <span>Reviews</span>
             </a>
         </li>
 

@@ -36,12 +36,34 @@ class OrderDataTable extends DataTable
      */
     public function query()
     {
+        $itemTotals = DB::table('orderline as ol')
+            ->join('item as i', 'ol.item_id', '=', 'i.item_id')
+            ->select('ol.orderinfo_id', DB::raw('SUM(ol.quantity * i.sell_price) as item_total'))
+            ->groupBy('ol.orderinfo_id');
+
+        $serviceTotals = DB::table('service_orderline as sl')
+            ->join('service as s', 'sl.service_id', '=', 's.service_id')
+            ->select('sl.orderinfo_id', DB::raw('SUM(sl.quantity * s.price) as service_total'))
+            ->groupBy('sl.orderinfo_id');
+
         $orders = DB::table('customer as c')
             ->join('orderinfo as o', 'o.customer_id', '=', 'c.customer_id')
-            ->join('orderline as ol', 'o.orderinfo_id', '=', 'ol.orderinfo_id')
-            ->join('item as i', 'ol.item_id', '=', 'i.item_id')
-            ->select('o.orderinfo_id as orderinfo_id', 'c.fname', 'c.lname', 'c.addressline', 'o.date_placed', 'o.status', DB::raw("SUM(ol.quantity * i.sell_price) as total"))
-            ->groupBy('o.orderinfo_id');
+            ->leftJoinSub($itemTotals, 'it', function ($join) {
+                $join->on('o.orderinfo_id', '=', 'it.orderinfo_id');
+            })
+            ->leftJoinSub($serviceTotals, 'st', function ($join) {
+                $join->on('o.orderinfo_id', '=', 'st.orderinfo_id');
+            })
+            ->select(
+                'o.orderinfo_id as orderinfo_id',
+                'c.fname',
+                'c.lname',
+                'c.addressline',
+                'o.date_placed',
+                'o.status',
+                DB::raw('COALESCE(it.item_total, 0) + COALESCE(st.service_total, 0) as total')
+            );
+
         return $orders;
     }
 
@@ -55,7 +77,7 @@ class OrderDataTable extends DataTable
             ->columns($this->getColumns())
             ->minifiedAjax()
             //->dom('Bfrtip')
-            ->orderBy(1)
+            ->orderBy(0)
             ->selectStyleSingle()
             ->buttons([
                 Button::make('excel'),
@@ -73,18 +95,19 @@ class OrderDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::computed('action')
-                ->exportable(false)
-                ->printable(false)
-                ->width(60)
-                ->addClass('text-center'),
             ['data' => 'orderinfo_id', 'name' => 'o.orderinfo_id', 'title' => 'order id'],
             ['data' => 'lname', 'name' => 'c.lname', 'title' => 'last name'],
             ['data' => 'fname', 'name' => 'c.fname', 'title' => 'first Name'],
             ['data' => 'addressline', 'name' => 'c.addressline', 'title' => 'address'],
             ['data' => 'date_placed', 'name' => 'o.date_placed', 'title' => 'date ordered'],
             ['data' => 'status', 'name' => 'o.status', 'title' => 'status'],
-            Column::make('total')->searchable(false)
+            Column::make('total')->searchable(false),
+            Column::computed('action')
+                ->title('Action')
+                ->exportable(false)
+                ->printable(false)
+                ->width(60)
+                ->addClass('text-center'),
         ];
     }
 

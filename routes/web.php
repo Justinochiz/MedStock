@@ -41,6 +41,8 @@ Route::get('/', function () {
 })->name('landing');
 
 Route::get('/shop', [ItemController::class, 'getItems'])->name('getItems');
+Route::get('/shop/services', [ServiceController::class, 'shop'])->name('shop.services');
+Route::get('/shop/services/{service}', [ServiceController::class, 'showPublic'])->name('shop.services.show');
 Route::get('/items/{items}', [ItemController::class, 'show'])->name('items.show');
 Route::get('/add-to-cart/{id}', [ItemController::class, 'addToCart'])->name('addToCart');
 Route::get('/buy-now/{id}', [ItemController::class, 'buyNow'])->name('buyNow');
@@ -56,6 +58,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [UserController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
     Route::post('/items/{item}/reviews', [ReviewController::class, 'storeItem'])->name('items.reviews.store');
+    Route::post('/services/{service}/buy-now', [ServiceController::class, 'buyNow'])->name('services.buyNow');
+    Route::post('/services/{service}/reviews', [ReviewController::class, 'storeService'])->name('services.reviews.store');
     Route::get('/shopping-cart', [ItemController::class, 'getCart'])->name('getCart');
     Route::get('/checkout', [ItemController::class, 'showCheckout'])->name('checkout');
     Route::post('/checkout', [ItemController::class, 'postCheckout'])->name('checkout.process');
@@ -68,6 +72,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/users', [DashboardController::class, 'getUsers'])->name('admin.users');
         Route::get('/discount-codes', [DashboardController::class, 'discountCodes'])->name('admin.discount-codes');
         Route::get('/orders', [DashboardController::class, 'getOrders'])->name('admin.orders');
+        Route::get('/reviews', [DashboardController::class, 'getReviews'])->name('admin.reviews');
+        Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
         Route::get('/order/{id}', [OrderController::class, 'processOrder'])->name('admin.orderDetails');
         Route::post('/order/{id}', [OrderController::class, 'orderUpdate'])->name('admin.orderUpdate');
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
