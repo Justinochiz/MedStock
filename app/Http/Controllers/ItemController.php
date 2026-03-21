@@ -19,6 +19,8 @@ use Carbon\Carbon;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Review;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendOrderStatus;
 
 
 class ItemController extends Controller
@@ -604,6 +606,36 @@ class ItemController extends Controller
         }
 
         DB::commit();
+
+        $orderLines = collect($cart->items)->map(function ($line) {
+            $item = $line['item'] ?? null;
+
+            return (object) [
+                'description' => (string) data_get($item, 'description', 'Item'),
+                'quantity' => (int) ($line['qty'] ?? 0),
+                'sell_price' => (float) data_get($item, 'sell_price', 0),
+                'img_path' => data_get($item, 'img_path'),
+            ];
+        });
+
+        try {
+            $receiptData = [
+                'order_number' => $order->orderinfo_id,
+                'customer_name' => $order->customer_name,
+                'customer_email' => Auth::user()->email,
+                'customer_phone' => $order->customer_phone,
+                'shipping_address' => $order->shipping_address,
+                'payment_method' => $order->payment_method,
+                'status' => $order->status,
+                'date_placed' => $order->date_placed,
+                'total_amount' => $order->total_amount,
+            ];
+
+            Mail::to((string) Auth::user()->email)->send(new SendOrderStatus($orderLines, $receiptData));
+        } catch (\Throwable $mailException) {
+            // Do not fail a successful transaction because of a mail transport issue.
+        }
+
         if (Session::pull('is_buy_now', false)) {
             Session::forget('cart');
             if (Session::has('cart_backup_for_buy_now')) {

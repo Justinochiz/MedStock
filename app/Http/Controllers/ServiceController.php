@@ -11,9 +11,11 @@ use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Validator;
+use App\Mail\SendOrderStatus;
 
 class ServiceController extends Controller
 {
@@ -235,6 +237,33 @@ class ServiceController extends Controller
 
             DB::commit();
 
+            $orderLines = collect($services)->map(function (array $serviceLine) {
+                return (object) [
+                    'description' => (string) ($serviceLine['name'] ?? 'Service'),
+                    'quantity' => (int) ($serviceLine['qty'] ?? 0),
+                    'sell_price' => (float) ($serviceLine['price'] ?? 0),
+                    'img_path' => $serviceLine['img_path'] ?? null,
+                ];
+            });
+
+            try {
+                $receiptData = [
+                    'order_number' => $order->orderinfo_id,
+                    'customer_name' => $order->customer_name,
+                    'customer_email' => Auth::user()->email,
+                    'customer_phone' => $order->customer_phone,
+                    'shipping_address' => $order->shipping_address,
+                    'payment_method' => $order->payment_method,
+                    'status' => $order->status,
+                    'date_placed' => $order->date_placed,
+                    'total_amount' => $order->total_amount,
+                ];
+
+                Mail::to((string) Auth::user()->email)->send(new SendOrderStatus($orderLines, $receiptData));
+            } catch (\Throwable $mailException) {
+                // Do not fail a successful transaction because of a mail transport issue.
+            }
+
             session()->forget(self::SERVICE_CART_SESSION_KEY);
 
             return redirect()->route('home')->with('success', 'Service order placed successfully.');
@@ -315,6 +344,33 @@ class ServiceController extends Controller
             ]);
 
             DB::commit();
+
+            $orderLines = collect([
+                (object) [
+                    'description' => (string) $service->name,
+                    'quantity' => $quantity,
+                    'sell_price' => (float) $service->price,
+                    'img_path' => $service->img_path,
+                ],
+            ]);
+
+            try {
+                $receiptData = [
+                    'order_number' => $order->orderinfo_id,
+                    'customer_name' => $order->customer_name,
+                    'customer_email' => Auth::user()->email,
+                    'customer_phone' => $order->customer_phone,
+                    'shipping_address' => $order->shipping_address,
+                    'payment_method' => $order->payment_method,
+                    'status' => $order->status,
+                    'date_placed' => $order->date_placed,
+                    'total_amount' => $order->total_amount,
+                ];
+
+                Mail::to((string) Auth::user()->email)->send(new SendOrderStatus($orderLines, $receiptData));
+            } catch (\Throwable $mailException) {
+                // Do not fail a successful transaction because of a mail transport issue.
+            }
 
             return redirect()->route('home')->with('success', 'Service order placed successfully.');
         } catch (\Throwable $e) {

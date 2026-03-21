@@ -63,6 +63,15 @@
             <div class="col-12 col-xl-4">
                 <div class="medical-card p-4 sticky-status-card">
                     <h4 class="section-title"><i class="fas fa-notes-medical me-2"></i>Update Status</h4>
+                    @if(!empty($receiptUrl))
+                        <a href="{{ $receiptUrl }}" target="_blank" rel="noopener" class="btn btn-outline-primary w-100 mt-3">
+                            <i class="fas fa-file-pdf me-1"></i>Download Receipt PDF
+                        </a>
+                    @else
+                        <div class="alert alert-light border mt-3 mb-0" role="alert">
+                            Receipt PDF is not available yet. Update/send email to generate it.
+                        </div>
+                    @endif
                     <form action="{{ route('admin.orderUpdate', $customer->orderinfo_id) }}" method="POST" class="mt-3">
                         @csrf
                         <div class="mb-3">
