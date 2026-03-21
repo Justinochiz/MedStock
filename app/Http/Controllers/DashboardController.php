@@ -434,19 +434,37 @@ class DashboardController extends Controller
             ],
         ]);
 
-        $items = DB::table('orderline AS ol')
+        $itemSalesQuery = DB::table('orderline AS ol')
             ->join('item AS i', 'ol.item_id', '=', 'i.item_id')
+            ->join('orderinfo AS o', 'ol.orderinfo_id', '=', 'o.orderinfo_id')
+            ->whereNotNull('o.date_placed');
+
+        $applyOrderDateRange($itemSalesQuery);
+
+        $itemSalesAmounts = $itemSalesQuery
             ->groupBy('i.description')
             ->orderBy('total', 'DESC')
-            ->pluck(DB::raw('sum(ol.quantity) AS total'), 'description')
+            ->pluck(DB::raw('sum(ol.quantity * i.sell_price) AS total'), 'description')
             ->all();
-        // dd($items);
+
+        $totalItemSales = array_sum($itemSalesAmounts);
+        $items = [];
+
+        foreach ($itemSalesAmounts as $description => $amount) {
+            $items[$description] = $totalItemSales > 0
+                ? round(($amount / $totalItemSales) * 100, 2)
+                : 0;
+        }
+
+        if (empty($items)) {
+            $items = ['No Data' => 0];
+        }
 
         $itemChart = new ItemChart;
         $dataset = $itemChart->labels(array_keys($items));
         // dd($dataset);
         $dataset = $itemChart->dataset(
-            'Item sold',
+            'Product sales contribution (%)',
             'doughnut',
             array_values($items)
         );

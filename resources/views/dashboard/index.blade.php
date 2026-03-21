@@ -71,7 +71,7 @@
                 <div class="card medical-card border-0">
                     <div class="card-header border-0 bg-white py-3">
                         <h5 class="card-title mb-0">
-                            <i class="fas fa-vial"></i> Medicine Sales Distribution
+                            <i class="fas fa-vial"></i> Product Sales Contribution (%)
                         </h5>
                     </div>
                     <div class="card-body">

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Spatie\Searchable\Search;
 use App\Models\Item;
 use App\Models\Service;
 
@@ -13,25 +12,33 @@ class SearchController extends Controller
     {
         $term = trim((string) $request->input('term', ''));
         $type = (string) $request->input('type', 'all');
+        $perPage = 10;
 
         if (!in_array($type, ['all', 'product', 'service'], true)) {
             $type = 'all';
         }
 
-        $search = new Search();
+        $products = null;
+        $services = null;
 
-        if (in_array($type, ['all', 'product'], true)) {
-            $search->registerModel(Item::class, ['description', 'category', 'sell_price']);
+        if ($term !== '') {
+            if (in_array($type, ['all', 'product'], true)) {
+                $products = Item::search($term)
+                    ->query(function ($query) {
+                        $query->whereNull('deleted_at')->orderBy('description');
+                    })
+                    ->paginate($perPage, 'products_page');
+            }
+
+            if (in_array($type, ['all', 'service'], true)) {
+                $services = Service::search($term)
+                    ->query(function ($query) {
+                        $query->whereNull('deleted_at')->orderBy('name');
+                    })
+                    ->paginate($perPage, 'services_page');
+            }
         }
 
-        if (in_array($type, ['all', 'service'], true)) {
-            $search->registerModel(Service::class, ['name', 'description', 'price']);
-        }
-
-        $searchResults = $term === ''
-            ? collect()
-            : $search->search($term);
-
-        return view('search', compact('searchResults', 'term', 'type'));
+        return view('search', compact('products', 'services', 'term', 'type'));
     }
 }

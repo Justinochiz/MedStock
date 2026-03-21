@@ -6,12 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Searchable\Searchable;
-use Spatie\Searchable\SearchResult;
+use Laravel\Scout\Searchable;
 
-class Item extends Model implements Searchable
+class Item extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Searchable;
     protected $table = 'item';
     public $timestamps = false;
     protected $primaryKey = 'item_id';
@@ -41,14 +40,11 @@ class Item extends Model implements Searchable
         return $this->hasMany(Review::class, 'item_id', 'item_id');
     }
 
-    public function getSearchResult(): SearchResult
+    public function toSearchableArray(): array
     {
-        $url = route('items.show', $this->item_id);
-
-        return new SearchResult(
-            $this,
-            $this->description,
-            $url
-        );
+        return [
+            'description' => (string) $this->description,
+            'category' => (string) $this->category,
+        ];
     }
 }
