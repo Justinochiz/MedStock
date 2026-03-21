@@ -23,7 +23,10 @@
                         <div class="info-item"><span class="label">Name</span><span class="value">{{ $customer->lname }} {{ $customer->fname }}</span></div>
                         <div class="info-item"><span class="label">Phone</span><span class="value">{{ $customer->phone }}</span></div>
                         <div class="info-item"><span class="label">Address</span><span class="value">{{ $customer->addressline }}</span></div>
-                        <div class="info-item"><span class="label">Amount</span><span class="value">{{ $total }}</span></div>
+                        <div class="info-item"><span class="label">Subtotal</span><span class="value">P{{ number_format($subtotal, 2) }}</span></div>
+                        <div class="info-item"><span class="label">Discount Code</span><span class="value">{{ $customer->discount_code ?? 'N/A' }}</span></div>
+                        <div class="info-item"><span class="label">Discount</span><span class="value text-success">- P{{ number_format($discountAmount, 2) }}</span></div>
+                        <div class="info-item"><span class="label">Total Amount</span><span class="value fw-bold">P{{ number_format($grandTotal, 2) }}</span></div>
                     </div>
                 </div>
 

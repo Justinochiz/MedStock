@@ -25,7 +25,7 @@ class ItemSeeder extends Seeder
             $item->save();
 
             $stock = new Stock;
-            $stock->item_id = $item->item_id;
+            $stock->item_id = (int) $item->getKey();
             $stock->quantity = 20;
             $stock->save();
         }

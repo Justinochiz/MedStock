@@ -61,7 +61,7 @@ class OrderDataTable extends DataTable
                 'c.addressline',
                 'o.date_placed',
                 'o.status',
-                DB::raw('COALESCE(it.item_total, 0) + COALESCE(st.service_total, 0) as total')
+                DB::raw('COALESCE(NULLIF(o.total_amount, 0), (COALESCE(it.item_total, 0) + COALESCE(st.service_total, 0) - COALESCE(o.discount_amount, 0) + COALESCE(o.shipping, 0))) as total')
             );
 
         return $orders;

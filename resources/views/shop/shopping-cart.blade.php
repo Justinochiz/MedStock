@@ -16,7 +16,7 @@
             </a>
         </div>
 
-        @if (Session::has('cart'))
+        @if (!empty($products ?? []))
             <div class="row g-4">
                 <div class="col-lg-8">
                     @foreach ($products as $product)

@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Order;
 use Faker\Generator as Faker;
 use DB;
+use Illuminate\Support\Carbon;
 
 class OrderSeeder extends Seeder
 {
@@ -18,8 +19,8 @@ class OrderSeeder extends Seeder
         for ($i = 0; $i < 100; $i++) {
             $order = new Order();
             $order->customer_id =  $faker->numberBetween(1, 10);
-            $order->date_placed = $faker->dateTimeBetween('-2 month', '+9 month');
-            $order->date_shipped = $faker->dateTimeBetween('-2 month', '+9 month');
+            $order->date_placed = Carbon::instance($faker->dateTimeBetween('-2 month', '+9 month'));
+            $order->date_shipped = Carbon::instance($faker->dateTimeBetween('-2 month', '+9 month'));
             $order->status = 'processing';
             $order->shipping = 10;
             $order->save();

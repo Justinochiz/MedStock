@@ -42,6 +42,10 @@ class Cart
 
     public function reduceByOne($id)
     {
+        if (empty($this->items) || !isset($this->items[$id])) {
+            return;
+        }
+
         $this->items[$id]['qty']--;
         $this->items[$id]['price'] -= $this->items[$id]['item']['sell_price'];
         $this->totalQty--;
@@ -49,13 +53,29 @@ class Cart
         if ($this->items[$id]['qty'] <= 0) {
             unset($this->items[$id]);
         }
+
+        if (empty($this->items)) {
+            $this->items = null;
+            $this->totalQty = 0;
+            $this->totalPrice = 0;
+        }
     }
 
     public function removeItem($id)
     {
+        if (empty($this->items) || !isset($this->items[$id])) {
+            return;
+        }
+
         //dd($this->items);
         $this->totalQty -= $this->items[$id]['qty'];
         $this->totalPrice -= $this->items[$id]['price'];
         unset($this->items[$id]);
+
+        if (empty($this->items)) {
+            $this->items = null;
+            $this->totalQty = 0;
+            $this->totalPrice = 0;
+        }
     }
 }

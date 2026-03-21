@@ -19,7 +19,7 @@ use App\Mail\SendOrderStatus;
 
 class ServiceController extends Controller
 {
-    private const SERVICE_CART_SESSION_KEY = 'service_cart';
+    private const SERVICE_CART_KEY_PREFIX = 'service_cart_user_';
 
     public function shop()
     {
@@ -96,7 +96,7 @@ class ServiceController extends Controller
             ];
         }
 
-        session()->put(self::SERVICE_CART_SESSION_KEY, $cart);
+        session()->put($this->serviceCartSessionKey(), $cart);
 
         return redirect()->back()->with('success', $requestedQty . ' service(s) added to cart.');
     }
@@ -213,9 +213,6 @@ class ServiceController extends Controller
 
             $order = new Order();
             $order->customer_id = $customer->customer_id;
-            $order->customer_name = $this->formatCustomerName($customer, Auth::user()->name);
-            $order->customer_phone = $customer->phone;
-            $order->shipping_address = $this->formatCustomerAddress($customer);
             $order->date_placed = now();
             $order->date_shipped = now()->addDays(5);
             $order->shipping = 0;
@@ -249,10 +246,10 @@ class ServiceController extends Controller
             try {
                 $receiptData = [
                     'order_number' => $order->orderinfo_id,
-                    'customer_name' => $order->customer_name,
+                    'customer_name' => $this->formatCustomerName($order->customer, Auth::user()->name),
                     'customer_email' => Auth::user()->email,
-                    'customer_phone' => $order->customer_phone,
-                    'shipping_address' => $order->shipping_address,
+                    'customer_phone' => $order->customer->phone,
+                    'shipping_address' => $this->formatCustomerAddress($order->customer),
                     'payment_method' => $order->payment_method,
                     'status' => $order->status,
                     'date_placed' => $order->date_placed,
@@ -264,7 +261,7 @@ class ServiceController extends Controller
                 // Do not fail a successful transaction because of a mail transport issue.
             }
 
-            session()->forget(self::SERVICE_CART_SESSION_KEY);
+            session()->forget($this->serviceCartSessionKey());
 
             return redirect()->route('home')->with('success', 'Service order placed successfully.');
         } catch (\Throwable $e) {
@@ -323,9 +320,6 @@ class ServiceController extends Controller
 
             $order = new Order();
             $order->customer_id = $customer->customer_id;
-            $order->customer_name = $this->formatCustomerName($customer, Auth::user()->name);
-            $order->customer_phone = $customer->phone;
-            $order->shipping_address = $this->formatCustomerAddress($customer);
             $order->date_placed = now();
             $order->date_shipped = now()->addDays(5);
             $order->shipping = 0;
@@ -357,10 +351,10 @@ class ServiceController extends Controller
             try {
                 $receiptData = [
                     'order_number' => $order->orderinfo_id,
-                    'customer_name' => $order->customer_name,
+                    'customer_name' => $this->formatCustomerName($order->customer, Auth::user()->name),
                     'customer_email' => Auth::user()->email,
-                    'customer_phone' => $order->customer_phone,
-                    'shipping_address' => $order->shipping_address,
+                    'customer_phone' => $order->customer->phone,
+                    'shipping_address' => $this->formatCustomerAddress($order->customer),
                     'payment_method' => $order->payment_method,
                     'status' => $order->status,
                     'date_placed' => $order->date_placed,
@@ -398,19 +392,28 @@ class ServiceController extends Controller
 
     private function getServiceCart(): array
     {
-        $cart = session()->get(self::SERVICE_CART_SESSION_KEY, []);
+        $cart = session()->get($this->serviceCartSessionKey(), []);
 
         return is_array($cart) ? $cart : [];
     }
 
     private function persistServiceCart(array $cart): void
     {
+        $cartKey = $this->serviceCartSessionKey();
+
         if (empty($cart)) {
-            session()->forget(self::SERVICE_CART_SESSION_KEY);
+            session()->forget($cartKey);
             return;
         }
 
-        session()->put(self::SERVICE_CART_SESSION_KEY, $cart);
+        session()->put($cartKey, $cart);
+    }
+
+    private function serviceCartSessionKey(): string
+    {
+        $userId = Auth::id();
+
+        return self::SERVICE_CART_KEY_PREFIX . ($userId ?: 'guest');
     }
 
     private function hasPurchasedService(int $userId, int $serviceId): bool

@@ -15,7 +15,20 @@ class OrderController extends Controller
     {
         $customer = DB::table('customer as c')->join('orderinfo as o', 'o.customer_id', '=', 'c.customer_id')
             ->where('o.orderinfo_id', $id)
-            ->select('c.lname', 'c.fname', 'c.addressline', 'c.phone', 'o.orderinfo_id',  'o.status', 'o.date_placed')
+            ->select(
+                'c.lname',
+                'c.fname',
+                'c.addressline',
+                'c.phone',
+                'o.orderinfo_id',
+                'o.status',
+                'o.date_placed',
+                'o.discount_code',
+                'o.discount_amount',
+                'o.subtotal_amount',
+                'o.total_amount',
+                'o.shipping'
+            )
             ->first();
 
         $itemOrders = DB::table('customer as c')
@@ -46,7 +59,11 @@ class OrderController extends Controller
             ? Storage::url($receiptPath)
             : null;
 
-        return view('order.processOrder', compact('customer', 'orders', 'total', 'receiptUrl'));
+        $subtotal = $customer->subtotal_amount !== null ? (float) $customer->subtotal_amount : (float) $total;
+        $discountAmount = $customer->discount_amount !== null ? (float) $customer->discount_amount : 0.0;
+        $grandTotal = $customer->total_amount !== null ? (float) $customer->total_amount : max(0, $subtotal - $discountAmount);
+
+        return view('order.processOrder', compact('customer', 'orders', 'total', 'receiptUrl', 'subtotal', 'discountAmount', 'grandTotal'));
     }
 
     public function orderUpdate(Request $request, $id)
@@ -84,11 +101,12 @@ class OrderController extends Controller
                     'o.date_placed',
                     'o.total_amount',
                     'o.payment_method',
-                    'o.shipping_address',
-                    'o.customer_name',
-                    'o.customer_phone',
                     'c.fname',
-                    'c.lname'
+                    'c.lname',
+                    'c.phone',
+                    'c.addressline',
+                    'c.town',
+                    'c.zipcode'
                 )
                 ->first();
 
@@ -100,17 +118,19 @@ class OrderController extends Controller
                 ->first();
             // dd($user);
 
-            $customerName = trim((string) ($orderMeta->customer_name ?? ''));
-            if ($customerName === '') {
-                $customerName = trim((string) (($orderMeta->fname ?? '') . ' ' . ($orderMeta->lname ?? '')));
-            }
+            $customerName = trim((string) (($orderMeta->fname ?? '') . ' ' . ($orderMeta->lname ?? '')));
+            $shippingAddress = implode(', ', array_filter([
+                $orderMeta->addressline,
+                $orderMeta->town,
+                $orderMeta->zipcode,
+            ]));
 
             $receiptData = [
                 'order_number' => $orderMeta->orderinfo_id ?? $id,
                 'customer_name' => $customerName,
                 'customer_email' => $user->email ?? null,
-                'customer_phone' => $orderMeta->customer_phone ?? null,
-                'shipping_address' => $orderMeta->shipping_address ?? null,
+                'customer_phone' => $orderMeta->phone ?? null,
+                'shipping_address' => $shippingAddress,
                 'payment_method' => $orderMeta->payment_method ?? null,
                 'status' => $orderMeta->status ?? $request->status,
                 'date_placed' => $orderMeta->date_placed ?? null,

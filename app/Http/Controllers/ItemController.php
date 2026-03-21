@@ -25,6 +25,10 @@ use App\Mail\SendOrderStatus;
 
 class ItemController extends Controller
 {
+    private const PRODUCT_CART_KEY_PREFIX = 'cart_user_';
+    private const BUY_NOW_BACKUP_KEY_PREFIX = 'cart_backup_for_buy_now_user_';
+    private const BUY_NOW_FLAG_KEY_PREFIX = 'is_buy_now_user_';
+
     private const DISCOUNT_CODES = [
         'MEDSAVE5' => 5,
         'CARE10' => 10,
@@ -402,7 +406,8 @@ class ItemController extends Controller
             return redirect()->back()->with('error', 'Quantity must be at least 1.');
         }
 
-        $oldCart = Session::has('cart') ? Session::get('cart') : null;
+        $cartKey = $this->productCartSessionKey();
+        $oldCart = Session::has($cartKey) ? Session::get($cartKey) : null;
 
         $existingQtyInCart = 0;
         if ($oldCart && isset($oldCart->items[$id])) {
@@ -422,7 +427,7 @@ class ItemController extends Controller
         $cart->add($item, $id, $requestedQty);
         // dd($cart);
 
-        Session::put('cart', $cart);
+        Session::put($cartKey, $cart);
 
         return redirect()->back()->with('success', $requestedQty . ' item(s) added to cart.');
     }
@@ -454,15 +459,19 @@ class ItemController extends Controller
             return redirect()->back()->with('error', 'Only ' . $availableQty . ' item(s) are available.');
         }
 
-        if (Session::has('cart')) {
-            Session::put('cart_backup_for_buy_now', Session::get('cart'));
+        $cartKey = $this->productCartSessionKey();
+        $buyNowBackupKey = $this->buyNowBackupSessionKey();
+        $buyNowFlagKey = $this->buyNowFlagSessionKey();
+
+        if (Session::has($cartKey)) {
+            Session::put($buyNowBackupKey, Session::get($cartKey));
         }
 
         $cart = new Cart(null);
         $cart->add($item, $id, $requestedQty);
 
-        Session::put('cart', $cart);
-        Session::put('is_buy_now', true);
+        Session::put($cartKey, $cart);
+        Session::put($buyNowFlagKey, true);
 
         return redirect()->route('checkout');
     }
@@ -470,10 +479,11 @@ class ItemController extends Controller
     public function getCart()
     {
         // dump(Session::get('cart'));
-        if (!Session::has('cart')) {
+        $cartKey = $this->productCartSessionKey();
+        if (!Session::has($cartKey)) {
             return view('shop.shopping-cart');
         }
-        $oldCart = Session::get('cart');
+        $oldCart = Session::get($cartKey);
         $cart = new Cart($oldCart);
         // dd($cart);
         return view('shop.shopping-cart', ['products' => $cart->items, 'totalPrice' => $cart->totalPrice]);
@@ -481,7 +491,8 @@ class ItemController extends Controller
 
     public function showCheckout(Request $request)
     {
-        if (!Session::has('cart')) {
+        $cartKey = $this->productCartSessionKey();
+        if (!Session::has($cartKey)) {
             return redirect()->route('getCart');
         }
 
@@ -490,7 +501,7 @@ class ItemController extends Controller
             return redirect()->route('profile.edit')->with('error', 'Please complete your profile before checkout.');
         }
 
-        $oldCart = Session::get('cart');
+        $oldCart = Session::get($cartKey);
         $cart = new Cart($oldCart);
         $discountCode = strtoupper(trim((string) $request->query('discount_code', '')));
         $summary = $this->buildCheckoutSummary($cart->totalPrice, $discountCode);
@@ -506,34 +517,47 @@ class ItemController extends Controller
 
     public function getReduceByOne($id)
     {
-        $oldCart = Session::has('cart') ? Session::get('cart') : null;
+        $cartKey = $this->productCartSessionKey();
+        $oldCart = Session::has($cartKey) ? Session::get($cartKey) : null;
+        if (!$oldCart || empty($oldCart->items) || !isset($oldCart->items[$id])) {
+            return redirect()->route('getCart');
+        }
+
         $cart = new Cart($oldCart);
         $cart->reduceByOne($id);
-        if (count($cart->items) > 0) {
-            Session::put('cart', $cart);
+        if (!empty($cart->items)) {
+            Session::put($cartKey, $cart);
         } else {
-            Session::forget('cart');
+            Session::forget($cartKey);
         }
         return redirect()->route('getCart');
     }
 
     public function getRemoveItem($id)
     {
-        $oldCart = Session::has('cart') ? Session::get('cart') : null;
+        $cartKey = $this->productCartSessionKey();
+        $oldCart = Session::has($cartKey) ? Session::get($cartKey) : null;
+        if (!$oldCart || empty($oldCart->items) || !isset($oldCart->items[$id])) {
+            return redirect()->route('getCart');
+        }
+
         $cart = new Cart($oldCart);
         $cart->removeItem($id);
-        if (count($cart->items) > 0) {
-            Session::put('cart', $cart);
+        if (!empty($cart->items)) {
+            Session::put($cartKey, $cart);
         } else {
-            Session::forget('cart');
+            Session::forget($cartKey);
         }
         return redirect()->route('getCart');
     }
 
     public function postCheckout()
     {
+        $cartKey = $this->productCartSessionKey();
+        $buyNowBackupKey = $this->buyNowBackupSessionKey();
+        $buyNowFlagKey = $this->buyNowFlagSessionKey();
 
-        if (!Session::has('cart')) {
+        if (!Session::has($cartKey)) {
             return redirect()->route('getCart');
         }
 
@@ -543,7 +567,7 @@ class ItemController extends Controller
             'payment_method' => 'required|in:cash_on_delivery,gcash,credit_card,debit_card',
         ]);
 
-        $oldCart = Session::get('cart');
+        $oldCart = Session::get($cartKey);
         $cart = new Cart($oldCart);
         $customer = Customer::where('user_id', Auth::id())->first();
         if (!$customer) {
@@ -560,9 +584,6 @@ class ItemController extends Controller
             DB::beginTransaction();
             $order = new Order();
             $order->customer_id = $customer->customer_id;
-            $order->customer_name = $this->formatCustomerName($customer, Auth::user()->name);
-            $order->customer_phone = $customer->phone;
-            $order->shipping_address = $this->formatCustomerAddress($customer);
             $order->date_placed = now();
             $order->date_shipped = Carbon::now()->addDays(5);
 
@@ -596,10 +617,10 @@ class ItemController extends Controller
         } catch (\Exception $e) {
             // dd($e->getMessage());
             DB::rollback();
-            if (Session::pull('is_buy_now', false)) {
-                Session::forget('cart');
-                if (Session::has('cart_backup_for_buy_now')) {
-                    Session::put('cart', Session::pull('cart_backup_for_buy_now'));
+            if (Session::pull($buyNowFlagKey, false)) {
+                Session::forget($cartKey);
+                if (Session::has($buyNowBackupKey)) {
+                    Session::put($cartKey, Session::pull($buyNowBackupKey));
                 }
             }
             return redirect()->route('getCart')->with('error', $e->getMessage());
@@ -621,10 +642,10 @@ class ItemController extends Controller
         try {
             $receiptData = [
                 'order_number' => $order->orderinfo_id,
-                'customer_name' => $order->customer_name,
+                'customer_name' => $this->formatCustomerName($order->customer, Auth::user()->name),
                 'customer_email' => Auth::user()->email,
-                'customer_phone' => $order->customer_phone,
-                'shipping_address' => $order->shipping_address,
+                'customer_phone' => $order->customer->phone,
+                'shipping_address' => $this->formatCustomerAddress($order->customer),
                 'payment_method' => $order->payment_method,
                 'status' => $order->status,
                 'date_placed' => $order->date_placed,
@@ -636,16 +657,37 @@ class ItemController extends Controller
             // Do not fail a successful transaction because of a mail transport issue.
         }
 
-        if (Session::pull('is_buy_now', false)) {
-            Session::forget('cart');
-            if (Session::has('cart_backup_for_buy_now')) {
-                Session::put('cart', Session::pull('cart_backup_for_buy_now'));
+        if (Session::pull($buyNowFlagKey, false)) {
+            Session::forget($cartKey);
+            if (Session::has($buyNowBackupKey)) {
+                Session::put($cartKey, Session::pull($buyNowBackupKey));
             }
         } else {
-            Session::forget('cart');
-            Session::forget('cart_backup_for_buy_now');
+            Session::forget($cartKey);
+            Session::forget($buyNowBackupKey);
         }
         return redirect('/')->with('success', 'Successfully Purchased Your Products!!!');
+    }
+
+    private function productCartSessionKey(): string
+    {
+        $userId = Auth::id();
+
+        return self::PRODUCT_CART_KEY_PREFIX . ($userId ?: 'guest');
+    }
+
+    private function buyNowBackupSessionKey(): string
+    {
+        $userId = Auth::id();
+
+        return self::BUY_NOW_BACKUP_KEY_PREFIX . ($userId ?: 'guest');
+    }
+
+    private function buyNowFlagSessionKey(): string
+    {
+        $userId = Auth::id();
+
+        return self::BUY_NOW_FLAG_KEY_PREFIX . ($userId ?: 'guest');
     }
 
     private function buildCheckoutSummary(float $subtotal, string $discountCode = ''): array
