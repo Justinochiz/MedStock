@@ -98,7 +98,7 @@
                             @error('discount_code')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text" id="discount-feedback">Use one of the promo codes shown on the left.</div>
+                            <div class="form-text" id="discount-feedback">Enter a valid discount code if available.</div>
                         </div>
 
                         <div class="mb-4">
@@ -260,7 +260,7 @@
                         feedback.classList.add('text-danger');
                     } else {
                         discountEl.textContent = 'No discount';
-                        feedback.textContent = 'Use one of the promo codes shown on the left.';
+                        feedback.textContent = 'Enter a valid discount code if available.';
                         feedback.classList.remove('text-success', 'text-danger');
                     }
 

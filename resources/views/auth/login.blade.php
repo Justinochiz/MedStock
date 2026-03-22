@@ -82,6 +82,14 @@
                                         SIGN IN
                                     </button>
 
+                                    <div class="text-center mb-3">
+                                        <p class="text-muted">
+                                            <a href="{{ route('password.request') }}" class="text-dark text-decoration-none">
+                                                Forgot Password?
+                                            </a>
+                                        </p>
+                                    </div>
+
                                     <div class="text-center">
                                         <p class="text-muted">
                                             Don't have an account? 

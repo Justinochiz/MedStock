@@ -73,6 +73,8 @@ class HomeController extends Controller
             ->where('c.user_id', Auth::id())
             ->select(
                 'o.orderinfo_id',
+                'i.item_id',
+                DB::raw('NULL as service_id'),
                 'i.description as item_name',
                 'i.img_path',
                 'i.gallery_paths',
@@ -89,6 +91,8 @@ class HomeController extends Controller
             ->where('c.user_id', Auth::id())
             ->select(
                 'o.orderinfo_id',
+                DB::raw('NULL as item_id'),
+                's.service_id',
                 's.name as item_name',
                 's.img_path',
                 's.gallery_paths',

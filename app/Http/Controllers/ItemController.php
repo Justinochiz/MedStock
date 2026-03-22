@@ -163,7 +163,7 @@ class ItemController extends Controller
             ->join('customer', 'orderinfo.customer_id', '=', 'customer.customer_id')
             ->where('customer.user_id', $userId)
             ->where('orderline.item_id', $itemId)
-            ->where('orderinfo.status', '!=', 'Canceled')
+            ->whereRaw('LOWER(orderinfo.status) = ?', ['delivered'])
             ->exists();
     }
 

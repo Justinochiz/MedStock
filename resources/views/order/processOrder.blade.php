@@ -4,6 +4,8 @@
         $statusClass = 'status-processing';
         if ($customer->status === 'Delivered') {
             $statusClass = 'status-delivered';
+        } elseif ($customer->status === 'Successful') {
+            $statusClass = 'status-successful';
         } elseif ($customer->status === 'Canceled') {
             $statusClass = 'status-canceled';
         }
@@ -82,6 +84,7 @@
                             <select class="form-select" id="status" name="status">
                                 <option value="Processing" @selected($customer->status === 'Processing')>Processing</option>
                                 <option value="Delivered" @selected($customer->status === 'Delivered')>Delivered</option>
+                                <option value="Successful" @selected($customer->status === 'Successful')>Successful</option>
                                 <option value="Canceled" @selected($customer->status === 'Canceled')>Canceled</option>
                             </select>
                         </div>
@@ -169,6 +172,12 @@
         }
 
         .status-delivered {
+            color: #0b6b2f;
+            background: #dff7e8;
+            border: 1px solid #9ed9b6;
+        }
+
+        .status-successful {
             color: #0b6b2f;
             background: #dff7e8;
             border: 1px solid #9ed9b6;

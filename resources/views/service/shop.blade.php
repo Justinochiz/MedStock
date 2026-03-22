@@ -30,14 +30,6 @@
             </div>
         </div>
 
-        @auth
-            <div class="d-flex justify-content-end mb-3">
-                <a href="{{ route('services.cart') }}" class="btn btn-outline-success">
-                    <i class="fas fa-shopping-cart me-1"></i>Service Cart
-                </a>
-            </div>
-        @endauth
-
         @if($services->count() > 0)
             <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                 <h4 class="mb-0">Available Services</h4>
@@ -70,26 +62,9 @@
 
                                 <div class="mt-auto d-grid gap-2">
                                     @auth
-                                        <form action="{{ route('services.addToCart', $service->service_id) }}" method="POST" class="d-grid gap-2">
+                                        <form action="{{ route('services.buyNow', $service->service_id) }}" method="POST" class="d-grid gap-2">
                                             @csrf
-                                            <label class="form-label small text-muted mb-0">Units / Devices</label>
-                                            <div class="d-flex gap-2 align-items-center">
-                                                <input
-                                                    type="number"
-                                                    name="quantity"
-                                                    min="1"
-                                                    max="99"
-                                                    value="1"
-                                                    class="form-control"
-                                                    style="max-width: 110px;"
-                                                    required
-                                                >
-                                                <button type="submit" class="btn btn-primary w-100">
-                                                    <i class="fas fa-shopping-cart me-1"></i>Add Service
-                                                </button>
-                                            </div>
-                                            <small class="text-muted">Set how many units/devices this service applies to.</small>
-                                            <button type="submit" formaction="{{ route('services.buyNow', $service->service_id) }}" class="btn btn-success">
+                                            <button type="submit" class="btn btn-primary w-100">
                                                 <i class="fas fa-bolt me-1"></i>Buy Now
                                             </button>
                                         </form>

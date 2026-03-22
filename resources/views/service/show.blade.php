@@ -44,21 +44,8 @@
 
                 @auth
                     <form action="{{ route('services.checkout', $service->service_id) }}" method="GET" class="d-grid gap-2" style="max-width: 420px;">
-                        <label for="service-quantity" class="form-label mb-0">Units / Devices</label>
-                        <input
-                            type="number"
-                            id="service-quantity"
-                            name="quantity"
-                            min="1"
-                            max="99"
-                            value="1"
-                            class="form-control"
-                            style="width: 130px;"
-                            required
-                        >
-                        <small class="text-muted">Set the number of units/devices covered by this service.</small>
                         <button type="submit" class="btn btn-success btn-lg">
-                            <i class="fas fa-credit-card"></i> Proceed to Checkout
+                            <i class="fas fa-bolt"></i> Buy Now
                         </button>
                     </form>
                 @else
@@ -114,7 +101,7 @@
                                         </div>
                                         <div class="col-md-9">
                                             <label for="comment" class="form-label fw-semibold">Comment</label>
-                                            <textarea id="comment" name="comment" rows="3" class="form-control @error('comment') is-invalid @enderror" placeholder="Share your experience with this service...">{{ old('comment', optional($userReview)->comment) }}</textarea>
+                                            <textarea id="comment" name="comment" rows="3" class="form-control @error('comment') is-invalid @enderror" placeholder="Share your experience with this service...">{{ old('comment') }}</textarea>
                                             @error('comment')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -128,7 +115,7 @@
                                 </form>
                             @else
                                 <div class="alert alert-info mb-4">
-                                    You can post a review after purchasing this service.
+                                    You can post a review after your service order is delivered.
                                 </div>
                             @endif
                         @else

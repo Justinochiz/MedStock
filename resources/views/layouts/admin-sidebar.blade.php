@@ -3,12 +3,9 @@
 <nav class="sidebar medical-sidebar" id="adminSidebar">
     <div class="sidebar-header medical-header">
         <div class="logo-container">
-            <div class="medical-logo">
-                <i class="fas fa-h-square"></i>
-            </div>
-            <div>
-                <h3 class="navbar-brand mb-0">MedStock</h3>
-            </div>
+            <a href="{{ route('dashboard.index') }}" class="navbar-brand d-flex align-items-center gap-2">
+                <img src="{{ asset('images/medstock-logo.svg') }}" alt="MedStock" height="60" class="d-inline-block">
+            </a>
         </div>
         <button type="button" class="btn-close sidebar-toggle d-lg-none" aria-label="Close Sidebar"></button>
     </div>
@@ -174,23 +171,16 @@
     }
 
     .medical-logo {
-        width: 50px;
-        height: 50px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.8rem;
-        color: white;
-        font-weight: bold;
+        display: none;
     }
 
-    .medical-header h3 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin: 0;
-        letter-spacing: 0.5px;
+    .medical-header .navbar-brand {
+        color: white;
+        text-decoration: none;
+    }
+
+    .medical-header .navbar-brand img {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     }
 
     .tagline {

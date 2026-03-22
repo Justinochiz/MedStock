@@ -12,6 +12,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 use DB;
+use Illuminate\Support\Carbon;
 
 class OrderDataTable extends DataTable
 {
@@ -27,7 +28,13 @@ class OrderDataTable extends DataTable
                 // $actionBtn = '<a href="#"  class="btn details btn-primary">Details</a>';
                 $actionBtn = '<a href="' . route('admin.orderDetails', $row->orderinfo_id) . '"  class="btn details btn-primary">Details</a>';
                 return $actionBtn;
-            })->rawColumns(['action'])
+            })
+            ->editColumn('date_placed', function ($row) {
+                return Carbon::parse($row->date_placed, 'UTC')
+                    ->setTimezone(config('app.timezone', 'Asia/Manila'))
+                    ->format('M d, Y h:i A');
+            })
+            ->rawColumns(['action'])
             ->setRowId('id');
     }
 

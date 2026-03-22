@@ -136,12 +136,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
     Route::post('/items/{item}/reviews', [ReviewController::class, 'storeItem'])->name('items.reviews.store');
     Route::post('/services/{service}/buy-now', [ServiceController::class, 'buyNow'])->name('services.buyNow');
-    Route::post('/services/{service}/add-to-cart', [ServiceController::class, 'addToCart'])->name('services.addToCart');
-    Route::get('/services/cart', [ServiceController::class, 'getCart'])->name('services.cart');
-    Route::get('/services/cart/reduce/{service}', [ServiceController::class, 'getReduceByOne'])->name('services.reduceByOne');
-    Route::get('/services/cart/remove/{service}', [ServiceController::class, 'getRemoveItem'])->name('services.removeItem');
-    Route::get('/services/checkout', [ServiceController::class, 'showCartCheckout'])->name('services.checkout.cart');
-    Route::post('/services/checkout', [ServiceController::class, 'postCartCheckout'])->name('services.checkout.cart.process');
     Route::get('/services/{service}/checkout', [ServiceController::class, 'showCheckout'])->name('services.checkout');
     Route::post('/services/{service}/checkout', [ServiceController::class, 'postCheckout'])->name('services.checkout.process');
     Route::post('/services/{service}/reviews', [ReviewController::class, 'storeService'])->name('services.reviews.store');

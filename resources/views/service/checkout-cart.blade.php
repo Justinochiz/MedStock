@@ -78,6 +78,57 @@
                         <h5 class="mb-3">Order Summary</h5>
 
                         <div class="mb-3">
+                            <label for="service_date" class="form-label">Service Date</label>
+                            <input
+                                type="date"
+                                id="service_date"
+                                name="service_date"
+                                value="{{ old('service_date', $selectedServiceDate) }}"
+                                min="{{ now()->toDateString() }}"
+                                class="form-control @error('service_date') is-invalid @enderror"
+                                required
+                            >
+                            @error('service_date')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="service_time" class="form-label">Service Time</label>
+                            <input
+                                type="time"
+                                id="service_time"
+                                name="service_time"
+                                value="{{ old('service_time', $selectedServiceTime) }}"
+                                class="form-control @error('service_time') is-invalid @enderror"
+                                required
+                            >
+                            @error('service_time')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Service Mode</label>
+                            @php
+                                $serviceMode = old('service_mode', $selectedServiceMode);
+                            @endphp
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="service_mode" value="onsite" {{ $serviceMode === 'onsite' ? 'checked' : '' }}>
+                                    <span>Onsite</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="service_mode" value="online" {{ $serviceMode === 'online' ? 'checked' : '' }}>
+                                    <span>Online</span>
+                                </label>
+                            </div>
+                            @error('service_mode')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label">Payment Method</label>
                             <div class="payment-options">
                                 @php

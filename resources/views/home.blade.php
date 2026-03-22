@@ -87,6 +87,8 @@
                                                 $imageUrl = !empty($storagePath) && \Illuminate\Support\Facades\Storage::disk('public')->exists($storagePath)
                                                     ? asset('storage/' . $storagePath)
                                                     : asset('images/medstock-logo.png');
+                                                $isDelivered = strtolower((string) $order->status) === 'delivered';
+                                                $isProductLine = strtolower((string) $item->line_type) === 'product';
                                             @endphp
                                             <div class="d-flex align-items-center justify-content-between gap-3 py-2">
                                                 <div class="d-flex align-items-center gap-3">
@@ -96,7 +98,14 @@
                                                         <small class="text-muted">{{ $item->line_type }} | Qty: {{ $item->quantity }}</small>
                                                     </div>
                                                 </div>
-                                                <div class="fw-semibold">P{{ number_format($item->unit_price * $item->quantity, 2) }}</div>
+                                                <div class="text-end">
+                                                    <div class="fw-semibold">P{{ number_format($item->unit_price * $item->quantity, 2) }}</div>
+                                                    @if($isDelivered && $isProductLine && !empty($item->item_id))
+                                                        <a href="{{ route('items.show', $item->item_id) }}" class="btn btn-sm btn-outline-primary mt-2">
+                                                            Add a Review
+                                                        </a>
+                                                    @endif
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>

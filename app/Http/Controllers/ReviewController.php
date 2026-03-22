@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use App\Models\Review;
 use App\Models\Service;
+use App\Services\BadWordsFilter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,12 @@ class ReviewController extends Controller
         ]);
 
         if (!$this->hasPurchasedItem((int) $user->id, (int) $item->item_id)) {
-            return redirect()->back()->with('error', 'You can only review items you have purchased.');
+            return redirect()->back()->with('error', 'You can only review items after your order is delivered.');
+        }
+
+        $comment = trim((string) ($validated['comment'] ?? '')) ?: null;
+        if ($comment !== null) {
+            $comment = BadWordsFilter::mask($comment);
         }
 
         Review::updateOrCreate(
@@ -34,7 +40,7 @@ class ReviewController extends Controller
             ],
             [
                 'rating' => $validated['rating'],
-                'comment' => trim((string) ($validated['comment'] ?? '')) ?: null,
+                'comment' => $comment,
                 'verified_purchase' => true,
             ]
         );
@@ -53,7 +59,12 @@ class ReviewController extends Controller
         ]);
 
         if (!$this->hasPurchasedService((int) $user->id, (int) $service->service_id)) {
-            return redirect()->back()->with('error', 'You can only review services you have purchased.');
+            return redirect()->back()->with('error', 'You can only review services after your order is delivered.');
+        }
+
+        $comment = trim((string) ($validated['comment'] ?? '')) ?: null;
+        if ($comment !== null) {
+            $comment = BadWordsFilter::mask($comment);
         }
 
         Review::updateOrCreate(
@@ -64,7 +75,7 @@ class ReviewController extends Controller
             ],
             [
                 'rating' => $validated['rating'],
-                'comment' => trim((string) ($validated['comment'] ?? '')) ?: null,
+                'comment' => $comment,
                 'verified_purchase' => true,
             ]
         );
@@ -87,7 +98,7 @@ class ReviewController extends Controller
             ->join('customer', 'orderinfo.customer_id', '=', 'customer.customer_id')
             ->where('customer.user_id', $userId)
             ->where('orderline.item_id', $itemId)
-            ->where('orderinfo.status', '!=', 'Canceled')
+            ->whereRaw('LOWER(orderinfo.status) = ?', ['delivered'])
             ->exists();
     }
 
@@ -98,7 +109,7 @@ class ReviewController extends Controller
             ->join('customer', 'orderinfo.customer_id', '=', 'customer.customer_id')
             ->where('customer.user_id', $userId)
             ->where('service_orderline.service_id', $serviceId)
-            ->where('orderinfo.status', '!=', 'Canceled')
+            ->whereRaw('LOWER(orderinfo.status) = ?', ['delivered'])
             ->exists();
     }
 }

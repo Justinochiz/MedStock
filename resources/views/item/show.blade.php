@@ -139,7 +139,7 @@
                                         </div>
                                         <div class="col-md-9">
                                             <label for="comment" class="form-label fw-semibold">Comment</label>
-                                            <textarea id="comment" name="comment" rows="3" class="form-control @error('comment') is-invalid @enderror" placeholder="Share your experience with this item...">{{ old('comment', optional($userReview)->comment) }}</textarea>
+                                            <textarea id="comment" name="comment" rows="3" class="form-control @error('comment') is-invalid @enderror" placeholder="Share your experience with this item...">{{ old('comment') }}</textarea>
                                             @error('comment')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -153,7 +153,7 @@
                                 </form>
                             @else
                                 <div class="alert alert-info mb-4">
-                                    You can post a review after purchasing this item.
+                                    You can post a review after your item order is delivered.
                                 </div>
                             @endif
                         @else

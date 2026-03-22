@@ -21,6 +21,14 @@ class ServiceController extends Controller
 {
     private const SERVICE_CART_KEY_PREFIX = 'service_cart_user_';
 
+    private const DISCOUNT_CODES = [
+        'MEDSAVE5' => 5,
+        'CARE10' => 10,
+        'HEALTH15' => 15,
+        'WELL20' => 20,
+        'IMED25' => 25,
+    ];
+
     public function shop()
     {
         $services = Service::query()->orderByDesc('service_id')->get();
@@ -51,10 +59,6 @@ class ServiceController extends Controller
 
     public function buyNow(Request $request, int $id)
     {
-        $request->validate([
-            'quantity' => 'required|integer|min:1|max:99',
-        ]);
-
         if (!Auth::check()) {
             return redirect()->route('login')
                 ->with('message', 'Please login or register to continue with service purchase.');
@@ -64,7 +68,6 @@ class ServiceController extends Controller
 
         return redirect()->route('services.checkout', [
             'service' => $service->service_id,
-            'quantity' => (int) $request->quantity,
         ]);
     }
 
@@ -162,6 +165,9 @@ class ServiceController extends Controller
 
         $request->validate([
             'payment_method' => 'nullable|in:cash_on_delivery,gcash,credit_card,debit_card',
+            'service_date' => 'nullable|date|after_or_equal:today',
+            'service_time' => 'nullable|date_format:H:i',
+            'service_mode' => 'nullable|in:online,onsite',
         ]);
 
         $customer = Customer::where('user_id', Auth::id())->first();
@@ -184,6 +190,9 @@ class ServiceController extends Controller
             'subtotal' => $subtotal,
             'total' => $subtotal,
             'selectedPaymentMethod' => $request->query('payment_method', 'cash_on_delivery'),
+            'selectedServiceDate' => $request->query('service_date'),
+            'selectedServiceTime' => $request->query('service_time'),
+            'selectedServiceMode' => $request->query('service_mode', 'onsite'),
         ]);
     }
 
@@ -196,6 +205,9 @@ class ServiceController extends Controller
 
         $request->validate([
             'payment_method' => 'required|in:cash_on_delivery,gcash,credit_card,debit_card',
+            'service_date' => 'required|date|after_or_equal:today',
+            'service_time' => 'required|date_format:H:i',
+            'service_mode' => 'required|in:online,onsite',
         ]);
 
         $customer = Customer::where('user_id', Auth::id())->first();
@@ -221,6 +233,9 @@ class ServiceController extends Controller
             $order->subtotal_amount = $subtotal;
             $order->total_amount = $subtotal;
             $order->payment_method = $request->input('payment_method');
+            $order->service_date = $request->input('service_date');
+            $order->service_time = $request->input('service_time');
+            $order->service_mode = $request->input('service_mode');
             $order->status = 'Processing';
             $order->save();
 
@@ -276,8 +291,10 @@ class ServiceController extends Controller
         $service = Service::findOrFail($id);
 
         $request->validate([
-            'quantity' => 'nullable|integer|min:1|max:99',
             'payment_method' => 'nullable|in:cash_on_delivery,gcash,credit_card,debit_card',
+            'service_date' => 'nullable|date|after_or_equal:today',
+            'service_time' => 'nullable|date_format:H:i',
+            'service_mode' => 'nullable|in:online,onsite',
         ]);
 
         $customer = Customer::where('user_id', Auth::id())->first();
@@ -285,16 +302,21 @@ class ServiceController extends Controller
             return redirect()->route('profile.edit')->with('error', 'Please complete your profile before checkout.');
         }
 
-        $quantity = (int) $request->query('quantity', 1);
+        $quantity = 1;
         $subtotal = (float) $service->price * $quantity;
+        $discountCode = strtoupper(trim((string) $request->query('discount_code', '')));
+        $summary = $this->buildCheckoutSummary($subtotal, $discountCode);
 
         return view('service.checkout', [
             'service' => $service,
             'customer' => $customer,
             'quantity' => $quantity,
-            'subtotal' => $subtotal,
-            'total' => $subtotal,
+            'summary' => $summary,
+            'discountCodes' => self::DISCOUNT_CODES,
             'selectedPaymentMethod' => $request->query('payment_method', 'cash_on_delivery'),
+            'selectedServiceDate' => $request->query('service_date'),
+            'selectedServiceTime' => $request->query('service_time'),
+            'selectedServiceMode' => $request->query('service_mode', 'onsite'),
         ]);
     }
 
@@ -303,8 +325,11 @@ class ServiceController extends Controller
         $service = Service::findOrFail($id);
 
         $request->validate([
-            'quantity' => 'required|integer|min:1|max:99',
+            'discount_code' => 'nullable|string|max:50',
             'payment_method' => 'required|in:cash_on_delivery,gcash,credit_card,debit_card',
+            'service_date' => 'required|date|after_or_equal:today',
+            'service_time' => 'required|date_format:H:i',
+            'service_mode' => 'required|in:online,onsite',
         ]);
 
         $customer = Customer::where('user_id', Auth::id())->first();
@@ -312,8 +337,10 @@ class ServiceController extends Controller
             return redirect()->route('profile.edit')->with('error', 'Please complete your profile before checkout.');
         }
 
-        $quantity = (int) $request->input('quantity');
+        $quantity = 1;
         $subtotal = (float) $service->price * $quantity;
+        $discountCode = strtoupper(trim((string) $request->input('discount_code', '')));
+        $summary = $this->buildCheckoutSummary($subtotal, $discountCode);
 
         try {
             DB::beginTransaction();
@@ -323,11 +350,14 @@ class ServiceController extends Controller
             $order->date_placed = now();
             $order->date_shipped = now()->addDays(5);
             $order->shipping = 0;
-            $order->discount_code = null;
-            $order->discount_amount = 0;
-            $order->subtotal_amount = $subtotal;
-            $order->total_amount = $subtotal;
+            $order->discount_code = $summary['appliedCode'];
+            $order->discount_amount = $summary['discountAmount'];
+            $order->subtotal_amount = $summary['subtotal'];
+            $order->total_amount = $summary['total'];
             $order->payment_method = $request->input('payment_method');
+            $order->service_date = $request->input('service_date');
+            $order->service_time = $request->input('service_time');
+            $order->service_mode = $request->input('service_mode');
             $order->status = 'Processing';
             $order->save();
 
@@ -390,6 +420,22 @@ class ServiceController extends Controller
         ]));
     }
 
+    private function buildCheckoutSummary(float $subtotal, string $discountCode = ''): array
+    {
+        $normalizedCode = strtoupper(trim($discountCode));
+        $discountPercent = self::DISCOUNT_CODES[$normalizedCode] ?? 0;
+        $discountAmount = round($subtotal * ($discountPercent / 100), 2);
+        $total = max(0, $subtotal - $discountAmount);
+
+        return [
+            'subtotal' => $subtotal,
+            'discountPercent' => $discountPercent,
+            'discountAmount' => $discountAmount,
+            'total' => $total,
+            'appliedCode' => $discountPercent > 0 ? $normalizedCode : null,
+        ];
+    }
+
     private function getServiceCart(): array
     {
         $cart = session()->get($this->serviceCartSessionKey(), []);
@@ -423,7 +469,7 @@ class ServiceController extends Controller
             ->join('customer', 'orderinfo.customer_id', '=', 'customer.customer_id')
             ->where('customer.user_id', $userId)
             ->where('service_orderline.service_id', $serviceId)
-            ->where('orderinfo.status', '!=', 'Canceled')
+            ->whereRaw('LOWER(orderinfo.status) = ?', ['delivered'])
             ->exists();
     }
 
