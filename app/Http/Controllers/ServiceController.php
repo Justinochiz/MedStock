@@ -451,6 +451,7 @@ class ServiceController extends Controller
         $rules = [
             'name' => 'required|string|min:3|max:255',
             'description' => 'nullable|string|max:1000',
+            'type' => 'nullable|string|min:2|max:100',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'images' => 'nullable|array',
@@ -462,6 +463,8 @@ class ServiceController extends Controller
             'name.min' => 'Service name must be at least 3 characters.',
             'name.max' => 'Service name may not be greater than 255 characters.',
             'description.max' => 'Description may not be greater than 1000 characters.',
+            'type.min' => 'Type must be at least 2 characters.',
+            'type.max' => 'Type may not be greater than 100 characters.',
             'price.required' => 'Price is required.',
             'price.numeric' => 'Price must be a valid number.',
             'price.min' => 'Price cannot be negative.',
@@ -487,6 +490,7 @@ class ServiceController extends Controller
         Service::create([
             'name' => trim($request->name),
             'description' => $request->description,
+            'type' => trim((string) $request->input('type', '')) !== '' ? trim((string) $request->input('type')) : null,
             'price' => $request->price,
             'img_path' => $path,
             'gallery_paths' => $galleryPaths,
@@ -523,6 +527,7 @@ class ServiceController extends Controller
         $rules = [
             'name' => 'required|string|min:3|max:255',
             'description' => 'nullable|string|max:1000',
+            'type' => 'nullable|string|min:2|max:100',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'images' => 'nullable|array',
@@ -534,6 +539,8 @@ class ServiceController extends Controller
             'name.min' => 'Service name must be at least 3 characters.',
             'name.max' => 'Service name may not be greater than 255 characters.',
             'description.max' => 'Description may not be greater than 1000 characters.',
+            'type.min' => 'Type must be at least 2 characters.',
+            'type.max' => 'Type may not be greater than 100 characters.',
             'price.required' => 'Price is required.',
             'price.numeric' => 'Price must be a valid number.',
             'price.min' => 'Price cannot be negative.',
@@ -554,6 +561,7 @@ class ServiceController extends Controller
 
         $service->name = trim($request->name);
         $service->description = $request->description;
+        $service->type = trim((string) $request->input('type', '')) !== '' ? trim((string) $request->input('type')) : null;
         $service->price = $request->price;
 
         $uploadedImages = $this->storeUploadedImages($request);

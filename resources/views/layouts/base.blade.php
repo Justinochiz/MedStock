@@ -44,9 +44,8 @@
     @include('layouts.admin-sidebar')
     <div class="@if(Auth::check() && Auth::user()->role === 'admin') admin-content @endif">
         @yield('body')
+        @include('layouts.footer')
     </div>
-    
-    @include('layouts.footer')
     
     @stack('scripts')
 

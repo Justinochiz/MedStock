@@ -170,6 +170,6 @@
 
     <p class="total">Total: PHP {{ $orderTotal }}</p>
 
-    <p class="footer">This receipt was generated automatically by iMedStock.</p>
+    <p class="footer">This receipt was generated automatically by MedStock.</p>
 </body>
 </html>

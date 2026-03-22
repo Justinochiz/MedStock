@@ -18,6 +18,7 @@ class ServiceImport implements ToCollection, WithHeadingRow
         foreach ($rows as $row) {
             $name = $row['service_name'] ?? $row['name'] ?? null;
             $description = $row['description'] ?? null;
+            $type = $row['type'] ?? $row['service_type'] ?? null;
             $price = $row['price'] ?? $row['sell_price'] ?? null;
             $imagePath = $this->resolveImagePath($row['image'] ?? null);
 
@@ -28,6 +29,7 @@ class ServiceImport implements ToCollection, WithHeadingRow
             Service::create([
                 'name' => trim((string) $name),
                 'description' => $description,
+                'type' => trim((string) $type) !== '' ? trim((string) $type) : null,
                 'price' => $price,
                 'img_path' => $imagePath,
                 'gallery_paths' => [$imagePath],

@@ -25,6 +25,15 @@
             </div>
 
             <div class="mb-3">
+                <label for="brand" class="form-label">Brand (Optional)</label>
+                <input type="text" class="form-control @error('brand') is-invalid @enderror"
+                       id="brand" name="brand" value="{{ old('brand', $item->brand ?? '') }}">
+                @error('brand')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="mb-3">
                 <label for="cost" class="form-label">Cost Price</label>
                 <input type="number" class="form-control @error('cost_price') is-invalid @enderror" 
                        id="cost" name="cost_price" value="{{ old('cost_price', $item->cost_price) }}" 

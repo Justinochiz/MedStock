@@ -15,7 +15,7 @@ class Service extends Model
     protected $table = 'service';
     public $timestamps = false;
     protected $primaryKey = 'service_id';
-    protected $fillable = ['name', 'description', 'price', 'img_path', 'gallery_paths'];
+    protected $fillable = ['name', 'description', 'type', 'price', 'img_path', 'gallery_paths'];
 
     protected $casts = [
         'gallery_paths' => 'array',
@@ -46,6 +46,7 @@ class Service extends Model
         return [
             'name' => (string) $this->name,
             'description' => (string) $this->description,
+            'type' => (string) ($this->type ?? ''),
         ];
     }
 }

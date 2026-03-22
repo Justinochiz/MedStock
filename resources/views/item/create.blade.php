@@ -34,6 +34,16 @@
                             </div>
 
                             <div class="mb-4">
+                                <label for="brand" class="form-label fw-bold">Brand (Optional)</label>
+                                <input type="text" name="brand" id="brand"
+                                    class="form-control form-control-lg @error('brand') is-invalid @enderror"
+                                    value="{{ old('brand') }}" placeholder="e.g. Unilab, Generic, Bayer">
+                                @error('brand')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-4">
                                 <label for="cost_price" class="form-label fw-bold">Cost Price</label>
                                 <input type="number" name="cost_price" id="cost_price" 
                                     class="form-control form-control-lg @error('cost_price') is-invalid @enderror" 

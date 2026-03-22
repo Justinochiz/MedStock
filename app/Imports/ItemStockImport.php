@@ -19,6 +19,7 @@ class ItemStockImport implements ToCollection, WithHeadingRow
         foreach ($rows as $row) {
             $description = $row['product_name'] ?? null;
             $category = $row['category'] ?? 'General';
+            $brand = $row['brand'] ?? null;
             $costPrice = $row['cost_price'] ?? null;
             $sellPrice = $row['sell_price'] ?? null;
             $quantity = (int) ($row['quantity'] ?? 0);
@@ -31,6 +32,7 @@ class ItemStockImport implements ToCollection, WithHeadingRow
             $item = Item::create([
                 'description' => trim((string) $description),
                 'category' => trim((string) $category) !== '' ? trim((string) $category) : 'General',
+                'brand' => trim((string) $brand) !== '' ? trim((string) $brand) : null,
                 'cost_price' => $costPrice,
                 'sell_price' => $sellPrice,
                 'img_path' => $imagePath,

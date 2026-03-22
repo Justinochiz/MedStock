@@ -1,0 +1,229 @@
+MEDSTOCK RUBRIC MAP (TAGLISH MODERN)
+Generated: 2026-03-22
+
+Legend:
+- Implemented = meron na and working flow exists in code
+- Partial = meron pero hindi pa full sa exact rubric requirement
+- Not found = wala akong nakita na direct implementation
+
+==================================================
+MP1 Product/Service (20 pts)
+==================================================
+Status: Implemented (with notes)
+
+1) Product/Service CRUD datatable
+Nasa:
+- app/Http/Controllers/ItemController.php
+- app/Http/Controllers/ServiceController.php
+- app/DataTables/ItemsDataTable.php
+- app/DataTables/ServicesDataTable.php
+- routes/web.php (admin item/service routes)
+
+2) CRUD + Restore + single photo
+Nasa:
+- app/Http/Controllers/ItemController.php (store/update, image handling, restore)
+- app/Http/Controllers/ServiceController.php (store/update, image handling, restore)
+- database/migrations/2026_01_27_020914_add_soft_deletes_to_item_table.php
+
+3) CRUD + Restore + multiple photos upload/view
+Nasa:
+- app/Http/Controllers/ItemController.php (gallery upload)
+- app/Http/Controllers/ServiceController.php (gallery upload)
+- database/migrations/2026_03_12_000001_add_gallery_paths_to_item_and_service_tables.php
+- app/DataTables/ItemsDataTable.php (gallery display)
+- app/DataTables/ServicesDataTable.php (gallery display)
+
+4) CRUD + Restore + multiple photos + Excel import
+Nasa:
+- app/Http/Controllers/ItemController.php (import)
+- app/Http/Controllers/ServiceController.php (import)
+- app/Imports/ItemImport.php
+- app/Imports/ServiceImport.php
+
+==================================================
+MP2 User CRUD (20 pts)
+==================================================
+Status: Implemented
+
+1) Registration with upload photo
+Nasa:
+- app/Http/Controllers/Auth/RegisterController.php
+
+2) Update profile + upload photo
+Nasa:
+- app/Http/Controllers/UserController.php (updateProfile)
+
+3) List users in datatable
+Nasa:
+- app/DataTables/UsersDataTable.php
+- app/Http/Controllers/DashboardController.php (getUsers)
+- resources/views/dashboard/users.blade.php
+
+4) Admin set active/inactive + update role
+Nasa:
+- app/Http/Controllers/UserController.php (update_role)
+- app/Http/Middleware/EnsureUserIsActive.php
+- database/migrations/2026_03_16_000002_add_is_active_to_users_table.php
+
+==================================================
+MP3 Auth + Verification + Route Protection (20 pts)
+==================================================
+Status: Implemented
+
+Nasa:
+- app/Models/User.php (MustVerifyEmail)
+- routes/web.php (Auth::routes(['verify' => true]))
+- routes/web.php (middleware(['auth', 'verified']))
+- routes/web.php (admin prefix + admin middleware)
+- app/Http/Middleware/AdminMiddleware.php
+- app/Http/Kernel.php (verified middleware)
+- app/Providers/EventServiceProvider.php (verification notification)
+
+==================================================
+MP4 Product Review CRUD (20 pts)
+==================================================
+Status: Implemented
+
+1) Only buyers can review
+Nasa:
+- app/Http/Controllers/ReviewController.php (purchase check logic)
+
+2) Can post and update review/comment/rating
+Nasa:
+- app/Http/Controllers/ReviewController.php (updateOrCreate flow)
+
+3) List all reviews on datatable
+Nasa:
+- app/DataTables/ReviewDataTable.php
+- app/Http/Controllers/DashboardController.php (getReviews)
+- resources/views/dashboard/reviews.blade.php
+
+4) Admin can delete user reviews
+Nasa:
+- app/Http/Controllers/ReviewController.php (destroy)
+- routes/web.php (admin.reviews.destroy)
+
+==================================================
+MP5 Validation (15 pts)
+==================================================
+Status: Implemented
+
+Nasa:
+- app/Http/Controllers/ItemController.php (add/edit validation)
+- app/Http/Controllers/ServiceController.php (add/edit validation)
+- app/Http/Controllers/Auth/RegisterController.php (registration validation)
+- app/Http/Controllers/UserController.php (profile validation)
+
+==================================================
+MP6 Filter (15 pts)
+==================================================
+Status: Partial
+
+Meron:
+- search/filter by term and type (product/service)
+Nasa:
+- app/Http/Controllers/SearchController.php
+- routes/web.php (/search)
+- app/Models/Item.php (Searchable)
+- app/Models/Service.php (Searchable)
+
+Kulang pa sa rubric exact:
+- explicit price range filter (min/max) sa UI/query
+- category/brand/type combo filter as separate full controls
+- brand field not clearly present as dedicated schema field
+
+==================================================
+MP7 Charts (15 pts)
+==================================================
+Status: Partial
+
+Meron:
+- chart classes and dashboard chart rendering logic
+Nasa:
+- app/Charts/YearlySalesChart.php
+- app/Charts/WeeklySalesChart.php
+- app/Charts/CustomerChart.php
+- app/Charts/ItemChart.php
+- app/Http/Controllers/DashboardController.php
+
+Kulang pa sa rubric exact:
+- pie chart percentage of total sales per product (not clearly found end-to-end)
+- yearly chart integration appears present in structure but needs final verification in UI behavior
+
+==================================================
+MP8 Search (15 pts)
+==================================================
+Status: Implemented (Scout-based)
+
+Nasa:
+- app/Http/Controllers/SearchController.php (search + pagination)
+- app/Models/Item.php and app/Models/Service.php (Searchable trait)
+- composer.json (laravel/scout)
+- routes/web.php (/search)
+
+Note:
+- LIKE query specific implementation is not the primary path now; current implementation is Scout/model search.
+
+==================================================
+TERM TEST LAB (30 pts)
+==================================================
+Status: Implemented
+
+1) Transaction email after completed transaction
+Nasa:
+- app/Http/Controllers/OrderController.php (mail send flow)
+- app/Http/Controllers/ServiceController.php (mail send flow)
+- app/Mail/SendOrderStatus.php
+
+2) Admin update transaction status
+Nasa:
+- app/Http/Controllers/OrderController.php (orderUpdate)
+- routes/web.php (admin.orderUpdate)
+
+3) Send email after status update
+Nasa:
+- app/Http/Controllers/OrderController.php (Mail::to(...)->send(...))
+
+4) Attach receipt PDF with customer/order details
+Nasa:
+- app/Mail/SendOrderStatus.php (Dompdf + attachment)
+- resources/views/email/order_status.blade.php
+
+==================================================
+QUIZ 4 UI DESIGN (15 pts)
+==================================================
+Status: Present in many views, but scoring basis is visual/rubric-specific
+
+Nasa:
+- resources/views/layouts/*
+- resources/views/dashboard/*
+- resources/views/item/*
+- resources/views/service/*
+- resources/views/users/*
+
+==================================================
+U1 Database Design / Migration / Seeding (20 pts)
+==================================================
+Status: Implemented
+
+1) DB design (at least 2NF)
+Nasa (schema references):
+- database/migrations/* (users, customer, item, service, orderinfo, orderline, reviews, stocks)
+
+2) Create DB via migrations
+Nasa:
+- database/migrations/*
+
+3) Database seeding
+Nasa:
+- database/seeders/DatabaseSeeder.php
+- database/seeders/* (ItemSeeder, UserSeeder, OrderSeeder, etc.)
+
+==================================================
+Quick Recommendation (para mas mataas score agad)
+==================================================
+1) MP6: add UI + backend for price range and category/brand/type filters.
+2) MP7: add explicit pie chart for product sales share in dashboard.
+3) MP8: if required by prof, add separate LIKE-based search endpoint and keep Scout as advanced mode.
+
+End of file.

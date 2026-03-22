@@ -34,6 +34,16 @@
                             </div>
 
                             <div class="mb-4">
+                                <label for="type" class="form-label fw-bold">Type (Optional)</label>
+                                <input type="text" name="type" id="type"
+                                    class="form-control form-control-lg @error('type') is-invalid @enderror"
+                                    value="{{ old('type') }}" placeholder="e.g. Consultation, Laboratory, Procedure">
+                                @error('type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-4">
                                 <label for="price" class="form-label fw-bold">Price</label>
                                 <input type="number" name="price" id="price"
                                     class="form-control form-control-lg @error('price') is-invalid @enderror"

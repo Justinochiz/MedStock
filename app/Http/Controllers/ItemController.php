@@ -61,6 +61,7 @@ class ItemController extends Controller
         $rules = [
             'description' => 'required|string|min:4|max:255',
             'category' => 'required|string|min:2|max:100',
+            'brand' => 'nullable|string|min:2|max:100',
             'cost_price' => 'required|numeric|min:0',
             'sell_price' => 'required|numeric|min:0|gte:cost_price',
             'quantity' => 'required|integer|min:0',
@@ -75,6 +76,8 @@ class ItemController extends Controller
             'category.required' => 'Category is required.',
             'category.min' => 'Category must be at least 2 characters.',
             'category.max' => 'Category may not be greater than 100 characters.',
+            'brand.min' => 'Brand must be at least 2 characters.',
+            'brand.max' => 'Brand may not be greater than 100 characters.',
             'cost_price.required' => 'Cost price is required.',
             'cost_price.numeric' => 'Cost price must be a valid number.',
             'cost_price.min' => 'Cost price cannot be negative.',
@@ -109,6 +112,7 @@ class ItemController extends Controller
         $item = Item::create([
             'description' => trim($request->description),
             'category' => trim($request->category),
+            'brand' => trim((string) $request->input('brand', '')) !== '' ? trim((string) $request->input('brand')) : null,
             'cost_price' => $request->cost_price,
             'sell_price' => $request->sell_price,
             'img_path' => $path,
@@ -188,6 +192,7 @@ class ItemController extends Controller
         $rules = [
             'description' => 'required|string|min:4|max:255',
             'category' => 'required|string|min:2|max:100',
+            'brand' => 'nullable|string|min:2|max:100',
             'cost_price' => 'required|numeric|min:0',
             'sell_price' => 'required|numeric|min:0|gte:cost_price',
             'quantity' => 'required|integer|min:0',
@@ -205,6 +210,8 @@ class ItemController extends Controller
             'category.required' => 'Category is required.',
             'category.min' => 'Category must be at least 2 characters.',
             'category.max' => 'Category may not be greater than 100 characters.',
+            'brand.min' => 'Brand must be at least 2 characters.',
+            'brand.max' => 'Brand may not be greater than 100 characters.',
             'cost_price.required' => 'Cost price is required.',
             'cost_price.numeric' => 'Cost price must be a valid number.',
             'cost_price.min' => 'Cost price cannot be negative.',
@@ -233,6 +240,7 @@ class ItemController extends Controller
 
         $item->description = $request->description;
         $item->category = trim($request->category);
+        $item->brand = trim((string) $request->input('brand', '')) !== '' ? trim((string) $request->input('brand')) : null;
         $item->cost_price = $request->cost_price;
         $item->sell_price = $request->sell_price;
 

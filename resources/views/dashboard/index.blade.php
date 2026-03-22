@@ -1,6 +1,6 @@
 @extends('layouts.base')
 @section('title')
-    Admin Dashboard - iMedStock
+    Admin Dashboard - MedStock
 @endsection
 @section('body')
     @include('layouts.flash-messages')

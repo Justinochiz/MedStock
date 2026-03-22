@@ -12,7 +12,7 @@
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px; background:#ffffff; border-radius:10px; border:1px solid #e5e7eb; overflow:hidden;">
                     <tr>
                         <td style="background:#0b5ed7; color:#ffffff; padding:16px 20px;">
-                            <h1 style="margin:0; font-size:20px; line-height:1.3;">iMedStock Order Notification</h1>
+                            <h1 style="margin:0; font-size:20px; line-height:1.3;">MedStock Order Notification</h1>
                         </td>
                     </tr>
 
@@ -71,12 +71,11 @@
                                 Total: PHP {{ $orderTotal }}
                             </p>
 
-                            <p style="margin:18px 0 0; font-size:14px; color:#4b5563; line-height:1.6;">
-                                Your PDF receipt is attached to this email.
+                           
                             </p>
 
                             <p style="margin:10px 0 0; font-size:14px; color:#4b5563; line-height:1.6;">
-                                Thank you for choosing iMedStock.
+                                Thank you for choosing MedStock.
                             </p>
                         </td>
                     </tr>

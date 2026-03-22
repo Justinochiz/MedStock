@@ -53,6 +53,83 @@ Route::get('/remove/{id}', [ItemController::class, 'getRemoveItem'])->name('remo
 Route::post('/items-import', [ItemController::class, 'import'])->name('item.import');
 Route::post('/services-import', [ServiceController::class, 'import'])->name('service.import');
 
+Route::get('/about-us', function () {
+    return view('footer.info', [
+        'pageTitle' => 'About MedStock',
+        'subtitle' => 'Who we are and what we value',
+        'items' => [
+            'MedStock is built to help users manage medical inventory with clarity and speed.',
+            'We prioritize policy and privacy for all users.',
+            'Owner: Justine Tomon',
+            'Owner: Shyr Nicole Belenzo',
+            'Section: BSIT-S-3A',
+        ],
+    ]);
+})->name('footer.about');
+
+Route::get('/features', function () {
+    return view('footer.info', [
+        'pageTitle' => 'MedStock Features',
+        'subtitle' => 'Core features of the system',
+        'items' => [
+            'Inventory tracking for medical supplies and equipment.',
+            'Order management for faster processing and status updates.',
+            'Service and product records in one platform.',
+            'Admin dashboard analytics for monitoring operations.',
+        ],
+    ]);
+})->name('footer.features');
+
+Route::get('/contact-us', function () {
+    return view('footer.info', [
+        'pageTitle' => 'Contact Us',
+        'subtitle' => 'Reach our team for more information',
+        'items' => [
+            'Facebook: Justine Tomon',
+            'Facebook: Shyr Nicole Belenzo',
+            'Email: tomonjustine74@gmail.com',
+        ],
+    ]);
+})->name('footer.contact');
+
+Route::get('/support', function () {
+    return view('footer.info', [
+        'pageTitle' => 'Support',
+        'subtitle' => 'Need help with MedStock?',
+        'items' => [
+            'For support concerns, please message us on Facebook.',
+            'If you have account or order issues, include your full name and issue details.',
+            'You can also send concerns to tomonjustine74@gmail.com.',
+        ],
+    ]);
+})->name('footer.support');
+
+Route::get('/privacy-policy', function () {
+    return view('footer.info', [
+        'pageTitle' => 'Privacy Policy',
+        'subtitle' => 'Your data and privacy',
+        'items' => [
+            'MedStock collects only data needed to provide core platform functions.',
+            'User data is used for account access, order processing, and service management.',
+            'We do not intentionally share personal information with unauthorized parties.',
+            'For privacy concerns, contact tomonjustine74@gmail.com.',
+        ],
+    ]);
+})->name('footer.privacy');
+
+Route::get('/terms-of-service', function () {
+    return view('footer.info', [
+        'pageTitle' => 'Terms of Service',
+        'subtitle' => 'Guidelines for using MedStock',
+        'items' => [
+            'Use MedStock responsibly and provide accurate account information.',
+            'Unauthorized access attempts and misuse of data are prohibited.',
+            'System features may be improved or updated as needed.',
+            'By using MedStock, you agree to these service terms.',
+        ],
+    ]);
+})->name('footer.terms');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/user/update/{id}', [UserController::class, 'update_role'])->name('users.update');
     Route::get('/profile', [UserController::class, 'editProfile'])->name('profile.edit');

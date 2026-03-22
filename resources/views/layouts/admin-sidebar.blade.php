@@ -42,6 +42,10 @@
     </div>
 
     <ul class="nav flex-column medical-nav">
+        <form id="logout-form" action="{{ route('user.logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+
         <li class="nav-section-label">
             <span>MAIN</span>
         </li>
@@ -107,16 +111,16 @@
             </a>
         </li>
 
-        <li class="nav-item mt-4 pt-3 border-top border-secondary">
-            <form id="logout-form" action="{{ route('user.logout') }}" method="POST" style="display: none;">
-                @csrf
-            </form>
+        <li class="nav-item">
             <a class="nav-link logout-link" href="#" onclick="document.getElementById('logout-form').submit(); return false;">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
         </li>
     </ul>
+
+    <div class="sidebar-bottom-banner" aria-hidden="true"></div>
+
 </nav>
 
 <!-- Sidebar Toggle Button (Mobile) -->
@@ -132,12 +136,16 @@
         background: linear-gradient(180deg, #f8f9fb 0%, #f4f6fa 100%);
         color: #2c3e50;
         min-height: 100vh;
+        height: 100vh;
         padding: 0;
         position: fixed;
         left: 0;
         top: 0;
         z-index: 1000;
-        overflow-y: auto;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
         transform: translateX(0);
         transition: transform 0.3s ease;
         border-right: 2px solid #e8ecf4;
@@ -294,7 +302,29 @@
 
     /* Medical Navigation */
     .medical-nav {
-        padding: 12px 0;
+        padding: 12px 0 64px;
+    }
+
+    .medical-sidebar::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .medical-sidebar::-webkit-scrollbar-thumb {
+        background: #8fb4e6;
+        border-radius: 10px;
+    }
+
+    .medical-sidebar::-webkit-scrollbar-track {
+        background: #e9eef5;
+    }
+
+    .sidebar-bottom-banner {
+        height: 48px;
+        margin: 0 12px 12px;
+        border-radius: 10px;
+        border-top: 3px solid #4CAF50;
+        background: linear-gradient(135deg, #0066CC 0%, #004494 100%);
+        box-shadow: 0 4px 10px rgba(0, 102, 204, 0.25);
     }
 
     .nav-section-label {
@@ -354,12 +384,29 @@
     .logout-link {
         color: #e74c3c !important;
         border-left-color: transparent !important;
+        font-weight: 600 !important;
+        background: rgba(231, 76, 60, 0.06);
     }
 
     .logout-link:hover {
         color: #c0392b !important;
         background-color: #fef5f4 !important;
         border-left-color: #e74c3c !important;
+    }
+
+    @media (max-height: 820px) {
+        .medical-profile {
+            margin-bottom: 10px;
+            padding: 12px;
+        }
+
+        .medical-nav {
+            padding-bottom: 8px;
+        }
+
+        .sidebar-bottom-banner {
+            display: none;
+        }
     }
 
     /* Main content area adjustment */
