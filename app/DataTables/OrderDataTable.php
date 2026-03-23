@@ -30,8 +30,8 @@ class OrderDataTable extends DataTable
                 return $actionBtn;
             })
             ->editColumn('date_placed', function ($row) {
-                return Carbon::parse($row->date_placed, 'UTC')
-                    ->setTimezone(config('app.timezone', 'Asia/Manila'))
+                return Carbon::parse($row->date_placed)
+                    ->timezone(config('app.timezone', 'Asia/Manila'))
                     ->format('M d, Y h:i A');
             })
             ->rawColumns(['action'])

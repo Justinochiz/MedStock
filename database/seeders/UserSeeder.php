@@ -15,12 +15,14 @@ class UserSeeder extends Seeder
      */
     public function run(Faker $faker): void
     {
-        // Create admin user only
-        $admin = new User();
-        $admin->name = 'Admin';
-        $admin->email = 'admin@medstock.com';
-        $admin->password = bcrypt('password');
-        $admin->role = 'admin';
-        $admin->save();
+        // Create admin user only if not exists
+        User::updateOrCreate(
+            ['email' => 'admin@medstock.com'],
+            [
+                'name' => 'Admin',
+                'password' => bcrypt('password'),
+                'role' => 'admin',
+            ]
+        );
     }
 }
