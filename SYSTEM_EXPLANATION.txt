@@ -1,0 +1,398 @@
+IMEDSTOCK 2.0 - SYSTEM EXPLANATION (TAGLISH)
+Date generated: 2026-03-23
+
+============================================================
+1) OVERVIEW NG SYSTEM
+============================================================
+Ang iMedStock 2.0 ay Laravel 10 based web app para sa medical shop operations.
+Main capabilities:
+- Product inventory management (items + stock)
+- Service catalog and service checkout
+- Cart and checkout flow for products and services
+- User profiles and customer details
+- Admin dashboard (charts + data tables)
+- Reviews with profanity masking
+- Email notifications for order status
+- Search with filters (price/category/brand/service type)
+
+Tech stack summary:
+- Backend: PHP 8.1+, Laravel 10
+- Frontend build: Vite + Bootstrap + Sass
+- Charts: consoletvs/charts
+- Tables: yajra/laravel-datatables + buttons
+- Import: maatwebsite/excel
+- PDF/email support: dompdf + Laravel Mail
+
+Core dependency sources:
+- composer.json
+- package.json
+
+============================================================
+2) HIGH-LEVEL ARCHITECTURE
+============================================================
+Folders at a glance:
+- app/Http/Controllers: feature logic per module
+- app/Models: Eloquent models (users, customer, item, order, service, review, stock)
+- app/DataTables: server-side datatable configs for admin pages
+- app/Charts: chart classes used by admin dashboard
+- app/Imports: Excel import handlers (items/services)
+- app/Mail: mailable for order status updates
+- app/Services: domain services (bad word filter)
+- resources/views: Blade templates for UI
+- routes/web.php: main route map (public + authenticated + admin)
+- database/migrations: schema history
+
+============================================================
+3) ROUTING AND ACCESS FLOW
+============================================================
+Main route behavior:
+- Landing "/" checks current user:
+  - verified admin -> redirect to admin dashboard
+  - verified non-admin or guest -> redirect to shop
+
+Public routes:
+- Shop pages for products and services
+- Product and service detail pages
+- Footer info pages (about/features/contact/support/privacy/terms)
+- Search route
+
+Authenticated + verified routes:
+- Profile edit/update
+- Checkout flows
+- Add reviews for purchased items/services
+- Customer profile creation/show
+
+Admin-only routes (prefix: /admin + middleware admin):
+- Dashboard
+- Customers, users, orders, reviews data pages
+- Review delete
+- Order status processing/update
+- Full item CRUD + restore
+- Full service CRUD + restore
+
+Auth behavior:
+- Auth::routes with email verification enabled
+- Logout endpoint under authenticated group
+
+Main file:
+- routes/web.php
+
+============================================================
+4) MIDDLEWARE AND SECURITY LAYER
+============================================================
+Global/web middleware highlights:
+- EnsureUserIsActive: blocks inactive users
+- VerifyCsrfToken: CSRF protection
+- UpdateLastSeen: tracks user last activity
+- AdminMiddleware alias "admin": role gate for admin pages
+
+Middleware aliases in kernel:
+- admin -> App\Http\Middleware\AdminMiddleware
+- active -> App\Http\Middleware\EnsureUserIsActive
+
+Main file:
+- app/Http/Kernel.php
+
+============================================================
+5) DOMAIN MODELS (DATA LAYER)
+============================================================
+User (app/Models/User.php):
+- auth identity, role, account status/activity fields
+
+Customer (app/Models/Customer.php):
+- table: customer
+- stores profile/address/phone linked to users
+
+Item (app/Models/Item.php):
+- table: item
+- fields include description/category/brand/cost/sell price/images
+- has soft deletes
+- has reviews relation
+- searchable array supported
+
+Stock (app/Models/Stock.php):
+- table: stock
+- quantity per item
+
+Order (app/Models/Order.php):
+- table: orderinfo
+- links to customer
+- status/payment/date/subtotal/discount/total and service schedule fields
+
+Service (app/Models/Service.php):
+- table: service
+- fields include name/description/type/price/images
+- has soft deletes
+- has reviews relation
+- searchable array supported
+
+Review (app/Models/Review.php):
+- item/service review with rating/comment/verified purchase
+- belongs to user, item, and service
+
+============================================================
+6) CONTROLLERS AND MAIN RESPONSIBILITIES
+============================================================
+DashboardController:
+- Builds dashboard metrics and chart datasets
+- Date-range aware analytics
+- Renders admin datatable pages:
+  - customers
+  - users
+  - orders
+  - reviews
+- Serves discount code information view
+
+ItemController (products):
+- Admin item CRUD + soft delete restore
+- Image upload + gallery handling
+- Excel import for items/stock
+- Public product listing/detail
+- Product cart management:
+  - add to cart
+  - buy now
+  - reduce/remove cart item
+- Product checkout:
+  - discount code logic
+  - payment method
+  - orderline + stock deduction
+  - email send after successful order
+
+ServiceController (services):
+- Admin service CRUD + soft delete restore
+- Image upload + gallery handling
+- Excel import for services
+- Public service listing/detail
+- Service cart management
+- Two service checkout modes:
+  - direct single-service checkout
+  - cart checkout for multiple services
+- Captures service schedule fields:
+  - service_date
+  - service_time
+  - service_mode (online/onsite)
+- Sends email after successful order
+
+OrderController:
+- Admin order detail/process page
+- Combines item lines + service lines in one order view
+- Updates status and sends status email
+
+ReviewController:
+- Item/service review creation
+- Review allowed only if delivered purchase exists
+- Masks bad words before save
+- Admin review deletion
+
+SearchController:
+- Unified search for products/services
+- Supports filters:
+  - min/max price
+  - category
+  - brand
+  - service_type
+- Works with Laravel Scout style search and fallback DB queries
+
+UserController:
+- Edit/update profile
+- Profile photo upload/replacement
+- Admin user role and active-status update
+- Logout
+
+HomeController:
+- Authenticated user order history view
+- Aggregates product + service line items by order
+
+CustomerController:
+- Customer profile persistence (mostly integrated with profile flow)
+
+============================================================
+7) ADMIN REPORTING LAYER
+============================================================
+Charts:
+- app/Charts/CustomerChart.php
+- app/Charts/ItemChart.php
+- app/Charts/MonthlySalesChart.php
+- app/Charts/WeeklySalesChart.php
+- app/Charts/YearlySalesChart.php
+
+Chart data/options setup:
+- app/Http/Controllers/DashboardController.php
+
+Chart rendering:
+- resources/views/dashboard/index.blade.php
+
+DataTables classes:
+- app/DataTables/CustomersDataTable.php
+- app/DataTables/UsersDataTable.php
+- app/DataTables/OrderDataTable.php
+- app/DataTables/ReviewDataTable.php
+- app/DataTables/ItemsDataTable.php
+- app/DataTables/ServicesDataTable.php
+
+============================================================
+8) CHECKOUT AND ORDER LIFECYCLE
+============================================================
+Product checkout lifecycle:
+1. User adds item(s) to cart
+2. System validates stock and quantity
+3. User opens checkout, picks payment method, optional discount code
+4. System creates orderinfo row
+5. System inserts orderline rows
+6. System deducts stock quantities
+7. System sends order email (best effort)
+8. Cart is cleared/restored depending on buy-now mode
+
+Service checkout lifecycle:
+1. User buy-now or adds service(s) to service cart
+2. User enters payment + schedule (date/time/mode)
+3. System creates orderinfo row with schedule fields
+4. System inserts service_orderline rows
+5. System sends order email (best effort)
+6. Service cart is cleared
+
+Admin update lifecycle:
+1. Admin opens order detail
+2. Admin updates status
+3. System sends updated status email to customer
+
+============================================================
+9) BAD WORD FILTER AND CONTENT MODERATION
+============================================================
+Files:
+- config/badwords.php
+- app/Services/BadWordsFilter.php
+- app/Helpers/BadWordsHelper.php
+
+Behavior:
+- Configurable bad words list
+- Regex-based detection and masking
+- Helpers available:
+  - mask_bad_words(text)
+  - has_bad_words(text)
+  - extract_bad_words(text)
+- Reviews currently call BadWordsFilter::mask before save
+
+============================================================
+10) DATABASE SCHEMA (BASED ON MIGRATIONS)
+============================================================
+Core tables created/managed:
+- users
+- customer
+- item
+- stock
+- orderinfo
+- orderline
+- service
+- service_orderline
+- reviews
+
+Notable evolution from migration history:
+- Added roles and account activity fields to users
+- Added gallery fields for item/service images
+- Added service schedule fields to orderinfo
+- Added soft deletes to item (and service model behavior indicates soft deletion usage)
+- Removed denormalized customer fields from orderinfo (normalized design)
+- Added bad-word related migration for review filtering
+
+============================================================
+11) FRONTEND VIEWS AND PAGES
+============================================================
+View groups in resources/views:
+- auth/: login/register/reset/verify
+- dashboard/: admin analytics
+- item/: admin item pages + item details
+- service/: service shop/cart/checkout/admin pages
+- shop/: product shop/cart/checkout
+- order/: order processing views
+- users/: profile and role management
+- email/: email templates (including receipt PDF view)
+- layouts/: base layout and shared partials
+- footer/: static info pages
+- home.blade.php: user order history dashboard
+- search.blade.php: search result page
+
+============================================================
+12) IMPORT, MAIL, AND AUTOMATION
+============================================================
+Import classes:
+- app/Imports/ItemImport.php
+- app/Imports/ItemStockImport.php
+- app/Imports/ServiceImport.php
+
+Mail class:
+- app/Mail/SendOrderStatus.php
+
+Command/automation baseline:
+- artisan entrypoint available
+- app/Console/Kernel.php exists for schedulable commands
+
+============================================================
+13) SESSION AND CART DESIGN
+============================================================
+Product cart:
+- Session key is user-scoped (cart_user_<id>)
+- Supports buy-now backup/restore flow
+
+Service cart:
+- Session key is user-scoped (service_cart_user_<id>)
+- Independent from product cart session
+
+Impact:
+- Product and service checkout are separated by cart namespace
+
+============================================================
+14) TESTING AND BUILD
+============================================================
+Testing:
+- phpunit.xml configured
+- tests/Feature and tests/Unit folders present
+
+Frontend build scripts:
+- npm run dev
+- npm run build
+
+Laravel commands commonly used:
+- php artisan serve
+- php artisan migrate
+- php artisan optimize:clear
+
+============================================================
+15) IMPORTANT NOTES / DESIGN OBSERVATIONS
+============================================================
+- System supports both physical product sales and service booking in one platform.
+- Review posting is protected by verified-purchase rule (delivered status).
+- Order amount calculations include fallback expressions for mixed item/service orders.
+- Admin dashboard is heavily query-driven and supports date-range filtering.
+- Bad-word filtering is centralized and reusable.
+- Normalization work removed duplicated customer data from order table, so customer details are resolved via joins/relations.
+
+============================================================
+16) QUICK FILE MAP (MOST IMPORTANT FILES)
+============================================================
+Core routes:
+- routes/web.php
+
+Main controllers:
+- app/Http/Controllers/DashboardController.php
+- app/Http/Controllers/ItemController.php
+- app/Http/Controllers/ServiceController.php
+- app/Http/Controllers/OrderController.php
+- app/Http/Controllers/SearchController.php
+- app/Http/Controllers/ReviewController.php
+- app/Http/Controllers/UserController.php
+- app/Http/Controllers/HomeController.php
+
+Models:
+- app/Models/User.php
+- app/Models/Customer.php
+- app/Models/Item.php
+- app/Models/Stock.php
+- app/Models/Order.php
+- app/Models/Service.php
+- app/Models/Review.php
+
+Admin views:
+- resources/views/dashboard/index.blade.php
+
+End of document.

@@ -19,7 +19,7 @@ return [
         'asshole',
         'damn',
         'putangina',
-        // Add more bad words here as needed
+        
     ],
 
     // Fields to apply the filter to

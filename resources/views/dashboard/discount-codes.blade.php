@@ -9,7 +9,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <div>
                 <h2 class="mb-1">Discount Codes</h2>
-                <p class="text-muted mb-0">Admin-only promo codes available for customer checkout.</p>
+                <p class="text-muted mb-0"> promo codes available for customer.</p>
             </div>
         </div>
 
