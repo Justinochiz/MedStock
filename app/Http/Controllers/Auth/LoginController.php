@@ -45,8 +45,10 @@ class LoginController extends Controller
     protected function authenticated(Request $request, $user)
     {
         if (!$user->hasVerifiedEmail()) {
-            return redirect()->route('verification.notice')
-                ->with('status', 'Please verify your email first. Check your inbox for the verification link.');
+            $this->guard()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect('/shop')->withErrors(['email' => 'Please verify your email first. Check your inbox for the verification link.']);
         }
 
         if (!$user->is_active) {

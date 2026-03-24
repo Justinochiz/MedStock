@@ -27,10 +27,10 @@
                         <a class="dropdown-item" href="{{ route('shop.services') }}">Browse Services</a>
                         <a class="dropdown-item" href="{{ route('profile.edit') }}">User Profile</a>
                         <div class="dropdown-divider"></div>
-                        <form id="logout-form" action="{{ route('user.logout') }}" method="POST" style="display: none;">
+                        <form id="logout-form-user" action="{{ route('user.logout') }}" method="POST" style="display: none;">
                             @csrf
                         </form>
-                        <a class="dropdown-item" href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('logout-form-user').submit(); return false;">Logout</a>
                     @elseif (Auth::check())
                         <a class="dropdown-item" href="{{ route('getCart') }}">View Product Cart</a>
                         <a class="dropdown-item" href="{{ route('shop.services') }}">Browse Services</a>
@@ -38,10 +38,10 @@
                         <a class="dropdown-item" href="{{ route('profile.edit') }}">User Profile</a>
                         {{-- <a class="dropdown-item" href="#">User Profile</a> --}}
                         <div class="dropdown-divider"></div>
-                        <form id="logout-form" action="{{ route('user.logout') }}" method="POST" style="display: none;">
+                        <form id="logout-form-user" action="{{ route('user.logout') }}" method="POST" style="display: none;">
                             @csrf
                         </form>
-                        <a class="dropdown-item" href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('logout-form-user').submit(); return false;">Logout</a>
                         {{-- <a class="dropdown-item" href="">Logout </a> --}}
                     @else
                         <a class="dropdown-item" href="{{ route('register') }}">register</a>

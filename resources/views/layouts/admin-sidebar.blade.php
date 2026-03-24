@@ -39,7 +39,7 @@
     </div>
 
     <ul class="nav flex-column medical-nav">
-        <form id="logout-form" action="{{ route('user.logout') }}" method="POST" style="display: none;">
+        <form id="logout-form-admin-sidebar" action="{{ route('user.logout') }}" method="POST" style="display: none;">
             @csrf
         </form>
 
@@ -109,7 +109,7 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link logout-link" href="#" onclick="document.getElementById('logout-form').submit(); return false;">
+            <a class="nav-link logout-link" href="#" onclick="document.getElementById('logout-form-admin-sidebar').submit(); return false;">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>

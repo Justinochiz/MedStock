@@ -23,7 +23,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 15000.00,
                 'sell_price' => 25000.00,
                 'img_path' => 'images/Defibrillator (AED).jpg',
-                'quantity' => 5
+                'quantity' => 89
             ],
             [
                 'description' => 'Defibrillator (AED) - Model 2',
@@ -32,7 +32,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 16000.00,
                 'sell_price' => 26000.00,
                 'img_path' => 'images/Defibrillator (AED)1.jpg',
-                'quantity' => 4
+                'quantity' => 56
             ],
             [
                 'description' => 'EKG Machine',
@@ -41,7 +41,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 45000.00,
                 'sell_price' => 65000.00,
                 'img_path' => 'images/EKG Machine.jpg',
-                'quantity' => 3
+                'quantity' => 37
             ],
             [
                 'description' => 'First Aid Kit 2',
@@ -50,7 +50,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 1500.00,
                 'sell_price' => 2500.00,
                 'img_path' => 'images/firstaid2.jpg',
-                'quantity' => 20
+                'quantity' => 90
             ],
             [
                 'description' => 'Hospital Bed (Electric)',
@@ -59,7 +59,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 35000.00,
                 'sell_price' => 55000.00,
                 'img_path' => 'images/Hospital Bed (Electric).jpg',
-                'quantity' => 2
+                'quantity' => 52
             ],
             [
                 'description' => 'Hospital Bed (Electric) - Model 1',
@@ -68,7 +68,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 38000.00,
                 'sell_price' => 58000.00,
                 'img_path' => 'images/Hospital Bed (Electric)1.jpg',
-                'quantity' => 2
+                'quantity' => 29
             ],
             [
                 'description' => 'Hospital Bed (Electric) - Model 2',
@@ -77,7 +77,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 40000.00,
                 'sell_price' => 60000.00,
                 'img_path' => 'images/Hospital Bed (Electric)2.jpg',
-                'quantity' => 2
+                'quantity' => 100
             ],
             [
                 'description' => 'Infusion Pump',
@@ -86,7 +86,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 8000.00,
                 'sell_price' => 12000.00,
                 'img_path' => 'images/Infusion Pump.jpg',
-                'quantity' => 8
+                'quantity' => 84
             ],
             [
                 'description' => 'Infusion Pump - Model 1',
@@ -95,7 +95,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 8500.00,
                 'sell_price' => 12500.00,
                 'img_path' => 'images/Infusion Pump1.jpg',
-                'quantity' => 7
+                'quantity' => 72
             ],
             [
                 'description' => 'Ophthalmoscope',
@@ -104,7 +104,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 2500.00,
                 'sell_price' => 4500.00,
                 'img_path' => 'images/Ophthalmoscope.jpeg',
-                'quantity' => 6
+                'quantity' => 67
             ],
             [
                 'description' => 'Patient Monitor',
@@ -113,7 +113,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 28000.00,
                 'sell_price' => 42000.00,
                 'img_path' => 'images/Patient Monitor.jpg',
-                'quantity' => 4
+                'quantity' => 44
             ],
             [
                 'description' => 'Pulse Oximeter',
@@ -122,7 +122,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 1200.00,
                 'sell_price' => 2500.00,
                 'img_path' => 'images/Pulse Oximeter.jpg',
-                'quantity' => 15
+                'quantity' => 158
             ],
             [
                 'description' => 'Surgical Scalpel',
@@ -131,7 +131,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 50.00,
                 'sell_price' => 150.00,
                 'img_path' => 'images/scalpel.jpg',
-                'quantity' => 50
+                'quantity' => 56
             ],
             [
                 'description' => 'Sphygmomanometer',
@@ -140,7 +140,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 800.00,
                 'sell_price' => 1800.00,
                 'img_path' => 'images/Sphygmomanometer.jpg',
-                'quantity' => 12
+                'quantity' => 121
             ],
             [
                 'description' => 'Surgical Instruments (Set)',
@@ -149,7 +149,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 5000.00,
                 'sell_price' => 9000.00,
                 'img_path' => 'images/Surgical Instruments (Set).jpg',
-                'quantity' => 4
+                'quantity' => 43
             ],
             [
                 'description' => 'Surgical Instruments (Set) - Model 1',
@@ -158,7 +158,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 5500.00,
                 'sell_price' => 9500.00,
                 'img_path' => 'images/Surgical Instruments (Set)1.jpg',
-                'quantity' => 3
+                'quantity' => 38
             ],
             [
                 'description' => 'Thermometer (Digital)',
@@ -167,7 +167,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 300.00,
                 'sell_price' => 800.00,
                 'img_path' => 'images/Thermometer.jpg',
-                'quantity' => 20
+                'quantity' => 85
             ],
             [
                 'description' => 'Ventilator (Transport)',
@@ -176,7 +176,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 25000.00,
                 'sell_price' => 38000.00,
                 'img_path' => 'images/Ventilator (Transport).jpg',
-                'quantity' => 2
+                'quantity' => 67
             ],
             [
                 'description' => 'Ventilator (Transport) - Model 1',
@@ -185,7 +185,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 26000.00,
                 'sell_price' => 39000.00,
                 'img_path' => 'images/Ventilator (Transport)1.jpg',
-                'quantity' => 2
+                'quantity' => 69
             ],
             [
                 'description' => 'Ventilator (Transport) - Model 2',
@@ -194,7 +194,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 27000.00,
                 'sell_price' => 40000.00,
                 'img_path' => 'images/Ventilator (Transport)2.jpg',
-                'quantity' => 2
+                'quantity' => 49
             ],
             [
                 'description' => 'Wheelchair - Standard',
@@ -203,7 +203,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 8000.00,
                 'sell_price' => 12000.00,
                 'img_path' => 'images/wheelchair1.jpg',
-                'quantity' => 6
+                'quantity' => 63
             ],
             [
                 'description' => 'Wheelchair - Manual',
@@ -212,7 +212,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 8500.00,
                 'sell_price' => 12500.00,
                 'img_path' => 'images/wheelchair2.jpg',
-                'quantity' => 5
+                'quantity' => 58
             ],
             [
                 'description' => 'Wheelchair - Lightweight',
@@ -221,7 +221,7 @@ class ItemSeeder extends Seeder
                 'cost_price' => 7500.00,
                 'sell_price' => 11500.00,
                 'img_path' => 'images/wheelchair3.jpg',
-                'quantity' => 6
+                'quantity' => 62
             ],
         ];
 

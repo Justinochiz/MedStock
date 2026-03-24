@@ -47,7 +47,7 @@ class ReviewDataTable extends DataTable
                     : '<span class="badge bg-secondary">Unverified</span>';
             })
             ->editColumn('created_at', function ($row) {
-                return Carbon::parse($row->created_at, 'UTC')
+                return Carbon::parse($row->created_at)
                     ->setTimezone(config('app.timezone', 'Asia/Manila'))
                     ->format('M d, Y h:i A');
             })

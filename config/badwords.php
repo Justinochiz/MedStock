@@ -19,6 +19,14 @@ return [
         'asshole',
         'damn',
         'putangina',
+        'baliw',
+        'tangina',
+        'kupal',
+        'ass',
+        'fuck you',
+        'shibal',
+        'bobo',
+        'dumbass',
         
     ],
 

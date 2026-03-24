@@ -22,6 +22,7 @@ class UserSeeder extends Seeder
                 'name' => 'Admin',
                 'password' => bcrypt('password'),
                 'role' => 'admin',
+                'email_verified_at' => now(), // Auto-verify admin
             ]
         );
     }

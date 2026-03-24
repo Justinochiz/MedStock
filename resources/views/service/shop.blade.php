@@ -41,19 +41,26 @@
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card h-100 shadow-sm border-0 service-card">
                             @php
-                                $rawGallery = $service->imageGallery();
-                                $gallery = [];
-                                foreach ($rawGallery as $photo) {
-                                    $storagePath = str_replace('public/', '', (string) $photo);
-                                    if (!empty($storagePath) && Storage::disk('public')->exists($storagePath)) {
-                                        $gallery[] = asset('storage/' . $storagePath);
+                                $imgSrc = null;
+                                if (!empty($service->img_path)) {
+                                    $imgSrc = asset($service->img_path);
+                                } else {
+                                    $rawGallery = $service->imageGallery();
+                                    $gallery = [];
+                                    foreach ($rawGallery as $photo) {
+                                        $storagePath = str_replace('public/', '', (string) $photo);
+                                        if (!empty($storagePath) && Storage::disk('public')->exists($storagePath)) {
+                                            $gallery[] = asset('storage/' . $storagePath);
+                                        }
+                                    }
+                                    if (!empty($gallery)) {
+                                        $imgSrc = $gallery[0];
+                                    } else {
+                                        $imgSrc = asset('images/medstock-logo.png');
                                     }
                                 }
-                                if (empty($gallery)) {
-                                    $gallery[] = asset('images/medstock-logo.png');
-                                }
                             @endphp
-                            <img src="{{ $gallery[0] }}" alt="{{ $service->name }}" class="card-img-top" style="height: 240px; object-fit: cover;">
+                            <img src="{{ $imgSrc }}" alt="{{ $service->name }}" class="card-img-top" style="height: 240px; object-fit: cover;">
 
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title fw-bold">{{ $service->name }}</h5>

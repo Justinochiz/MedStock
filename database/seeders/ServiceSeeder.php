@@ -54,7 +54,7 @@ class ServiceSeeder extends Seeder
                 'description' => 'On-site electrocardiogram services for patients. Professional-grade EKG equipment with trained technicians for accurate cardiac monitoring.',
                 'type' => 'Diagnostic',
                 'price' => 275.00,
-                'img_path' => 'images/Mobile EKG Services.jpg',
+               'img_path' => 'images/Mobile EKG Services.png',
             ],
         ];
 

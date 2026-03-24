@@ -105,6 +105,7 @@ class UserController extends Controller
     public function logout()
     {
         Auth::logout();
-        return redirect('/');
+        // Always redirect to products/shop page after logout, even if not verified
+        return redirect('/shop');
     }
 }
